@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace StellarShowcase.DataAccess.Blockchain
 {
-    internal class StellarClient
+    internal class StellarClient : IStellarClient
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly Settings _settings;

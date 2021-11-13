@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace StellarShowcase.Repositories.Implementations
+namespace StellarShowcase.Repositories.Interfaces
 {
-    internal class BlockchainRepository
+    public interface IIssuerRepository
     {
     }
 }
