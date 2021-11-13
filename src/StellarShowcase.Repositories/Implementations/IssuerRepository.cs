@@ -32,6 +32,8 @@ namespace StellarShowcase.Repositories.Implementations
                 Mnemonic = _stellarClient.GenerateMnemonic()
             };
 
+            // TODO: Make API call to stellar.lab to fund wallets
+
             await _dbContext.Issuer.AddAsync(issuer);
             await _dbContext.SaveChangesAsync();
         }
@@ -83,6 +85,67 @@ namespace StellarShowcase.Repositories.Implementations
 
             issuer.Assets.Add(assetEnt);
             await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task AuthorizeTrustline(Guid id, Guid assetId, Guid accountId)
+        {
+            var issuer = await _dbContext.Issuer
+                .Include(i => i.Assets)
+                .FirstOrDefaultAsync(i => i.Id == id);
+            var asset = issuer.Assets.FirstOrDefault(a => a.Id == assetId);
+            var account = await _dbContext.Account.FirstOrDefaultAsync(a => a.Id == accountId);
+
+            var issuerKeyPair = _stellarClient.DeriveKeyPair(issuer.Mnemonic, 0);
+            var accountKeyPair = _stellarClient.DeriveKeyPair(account.Mnemonic, 0);
+
+            var rawTx = await _stellarClient.BuildRawAuthorizeTrustlineTransaction(new AssetDto
+            {
+                IssuerAccountId = asset.IssuerAccountId,
+                UnitName = asset.UnitName,
+            }, accountKeyPair.AccountId);
+
+            _ = await _stellarClient.SignSubmitRawTransaction(issuerKeyPair.PrivateKey, rawTx);
+        }
+
+        public async Task RevokeTrustline(Guid id, Guid assetId, Guid accountId)
+        {
+            var issuer = await _dbContext.Issuer
+                .Include(i => i.Assets)
+                .FirstOrDefaultAsync(i => i.Id == id);
+            var asset = issuer.Assets.FirstOrDefault(a => a.Id == assetId);
+            var account = await _dbContext.Account.FirstOrDefaultAsync(a => a.Id == accountId);
+
+            var issuerKeyPair = _stellarClient.DeriveKeyPair(issuer.Mnemonic, 0);
+            var accountKeyPair = _stellarClient.DeriveKeyPair(account.Mnemonic, 0);
+
+            var rawTx = await _stellarClient.BuildRawRevokeTrustlineTransaction(new AssetDto
+            {
+                IssuerAccountId = asset.IssuerAccountId,
+                UnitName = asset.UnitName,
+            }, accountKeyPair.AccountId);
+
+            _ = await _stellarClient.SignSubmitRawTransaction(issuerKeyPair.PrivateKey, rawTx);
+        }
+
+        public async Task TransferAsset(Guid id, Guid assetId, Guid accountId, decimal amount, string memo = "")
+        {
+            var issuer = await _dbContext.Issuer
+               .Include(i => i.Assets)
+               .FirstOrDefaultAsync(i => i.Id == id);
+            var asset = issuer.Assets.FirstOrDefault(a => a.Id == assetId);
+            var account = await _dbContext.Account.FirstOrDefaultAsync(a => a.Id == accountId);
+
+            var distributorKeyPair = _stellarClient.DeriveKeyPair(issuer.Mnemonic, 1);
+            var accountKeyPair = _stellarClient.DeriveKeyPair(account.Mnemonic, 0);
+
+
+            var rawTx = await _stellarClient.BuildRawAssetTransaction(new AssetDto
+            {
+                IssuerAccountId = asset.IssuerAccountId,
+                UnitName = asset.UnitName,
+            },  distributorKeyPair.AccountId, accountKeyPair.AccountId, amount, memo);
+
+            _ = await _stellarClient.SignSubmitRawTransaction(distributorKeyPair.PrivateKey, rawTx);
         }
     }
 }
