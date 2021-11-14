@@ -19,6 +19,8 @@ namespace StellarShowcase.DataAccess.Blockchain
         {
             _httpClientFactory = httpClientFactory;
             _settings = options.Value;
+
+            Network.UseTestNetwork();
         }
 
         public string GenerateMnemonic()
@@ -38,6 +40,17 @@ namespace StellarShowcase.DataAccess.Blockchain
                 PrivateKey = kp.SecretSeed,
                 AccountId = kp.AccountId,
             };
+        }
+
+        public async Task FundAccount(string accountId)
+        {
+            var url = $"https://friendbot.stellar.org/?addr={accountId}";
+            using var httpClient = _httpClientFactory.CreateClient();
+
+            var result = await httpClient.GetAsync(url);
+
+            if (!result.IsSuccessStatusCode)
+                throw new Exception("Something went wrong, unable to fund account!");
         }
 
         public async Task<AccountDto> GetAccount(string accountId)

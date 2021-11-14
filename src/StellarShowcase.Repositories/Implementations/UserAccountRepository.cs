@@ -1,0 +1,100 @@
+﻿using Microsoft.EntityFrameworkCore;
+using StellarShowcase.DataAccess.Blockchain;
+using StellarShowcase.DataAccess.Database;
+using StellarShowcase.Domain.Dto;
+using StellarShowcase.Domain.Entities;
+using StellarShowcase.Repositories.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace StellarShowcase.Repositories.Implementations
+{
+    internal class UserAccountRepository : IUserAccountRepository
+    {
+        private readonly IAppDbContext _dbContext;
+        private readonly IStellarClient _stellarClient;
+
+        public UserAccountRepository(IAppDbContext dbContext, IStellarClient stellarClient)
+        {
+            _dbContext = dbContext;
+            _stellarClient = stellarClient;
+        }
+
+        public async Task AddUserAccount(UserAccountDto userDto)
+        {
+            var userAccount = new UserAccountEntity
+            {
+                Id = Guid.NewGuid(),
+                Created = DateTime.Now,
+                Mnemonic = _stellarClient.GenerateMnemonic(),
+                FullName = userDto.FullName,
+                Email = userDto.Email,
+                FullAddress = userDto.FullAddress,
+                Phone = userDto.Phone,
+            };
+
+            //
+            // Send 10.000 testnet XLM to addresses
+            //
+            var account = _stellarClient.DeriveKeyPair(userAccount.Mnemonic, 0);
+            await _stellarClient.FundAccount(account.AccountId);
+
+            await _dbContext.UserAccount.AddAsync(userAccount);
+            await _dbContext.Save();
+        }
+
+        public async Task<IEnumerable<UserAccountEntity>> GetUserAccounts()
+        {
+            return await _dbContext.UserAccount.ToListAsync();
+        }
+
+        public async Task<UserAccountEntity> GetUserAccount(Guid id)
+        {
+            return await _dbContext.UserAccount.FirstOrDefaultAsync(i => i.Id == id);
+        }
+
+        public async Task CreateTrustline(Guid id, Guid issuerId, Guid assetId, decimal? limit = null)
+        {
+            var account = await _dbContext.UserAccount.FirstOrDefaultAsync(a => a.Id == id);
+            var issuer = await _dbContext.Issuer
+                .Include(i => i.Assets)
+                .FirstOrDefaultAsync(i => i.Id == issuerId);
+            var asset = issuer.Assets.FirstOrDefault(a => a.Id == assetId);
+
+            var issuerKeyPair = _stellarClient.DeriveKeyPair(issuer.Mnemonic, 0);
+            var accountKeyPair = _stellarClient.DeriveKeyPair(account.Mnemonic, 0);
+
+            var rawTx = await _stellarClient.BuildRawCreateTrustlineTransaction(new AssetDto
+            {
+                IssuerAccountId = asset.IssuerAccountId,
+                UnitName = asset.UnitName,
+                TotalSupply = asset.TotalSupply,
+            }, limit ?? asset.TotalSupply, accountKeyPair.AccountId);
+
+            _ = await _stellarClient.SignSubmitRawTransaction(accountKeyPair.PrivateKey, rawTx);
+        }
+
+        public async Task TransferAsset(Guid id, Guid issuerId, Guid assetId, string recipientAccountId, decimal amount, string memo = "")
+        {
+            var account = await _dbContext.UserAccount.FirstOrDefaultAsync(a => a.Id == id);
+            var issuer = await _dbContext.Issuer
+               .Include(i => i.Assets)
+               .FirstOrDefaultAsync(i => i.Id == issuerId);
+            var asset = issuer.Assets.FirstOrDefault(a => a.Id == assetId);
+
+            var accountKeyPair = _stellarClient.DeriveKeyPair(account.Mnemonic, 0);
+
+            var rawTx = await _stellarClient.BuildRawAssetTransaction(new AssetDto
+            {
+                IssuerAccountId = asset.IssuerAccountId,
+                UnitName = asset.UnitName,
+                TotalSupply = asset.TotalSupply,
+            }, accountKeyPair.AccountId, recipientAccountId, amount, memo);
+
+            _ = await _stellarClient.SignSubmitRawTransaction(accountKeyPair.PrivateKey, rawTx);
+        }
+    }
+}
+

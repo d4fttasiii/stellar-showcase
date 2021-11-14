@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace StellarShowcase.DataAccess.Blockchain
 {
-    public interface IStellarClient
+    internal interface IStellarClient
     {
         string GenerateMnemonic();
 
@@ -11,11 +11,13 @@ namespace StellarShowcase.DataAccess.Blockchain
 
         Task<AccountDto> GetAccount(string accountId);
 
+        Task FundAccount(string accountId);
+
         Task<string> BuildConfigureIssuerWalletRawTransaction(string issuerAccountId);
 
         Task<string> BuildRawCreateAssetTransaction(AssetDto asset, string distributorAccountId);
 
-        Task<string> BuildRawCreateTrustlineTransaction(AssetDto asset, decimal limit, string trustorAccountId;
+        Task<string> BuildRawCreateTrustlineTransaction(AssetDto asset, decimal limit, string trustorAccountId);
 
         Task<string> BuildRawAuthorizeTrustlineTransaction(AssetDto asset, string trustorAccountId);
 

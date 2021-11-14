@@ -7,7 +7,6 @@ using StellarShowcase.Repositories.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace StellarShowcase.Repositories.Implementations
@@ -23,32 +22,43 @@ namespace StellarShowcase.Repositories.Implementations
             _stellarClient = stellarClient;
         }
 
-        public async Task AddIssuer()
+        public async Task<Guid> AddIssuer()
         {
             var issuer = new IssuerEntity
             {
                 Id = Guid.NewGuid(),
                 Created = DateTime.Now,
-                Mnemonic = _stellarClient.GenerateMnemonic()
+                Mnemonic = _stellarClient.GenerateMnemonic(),
             };
-
-            // TODO: Make API call to stellar.lab to fund wallets
+            //
+            // Send 10.000 testnet XLM to both addresses
+            //
+            var issuerAccount = _stellarClient.DeriveKeyPair(issuer.Mnemonic, 0);
+            await _stellarClient.FundAccount(issuerAccount.AccountId);
+            var distributorAccount = _stellarClient.DeriveKeyPair(issuer.Mnemonic, 1);
+            await _stellarClient.FundAccount(distributorAccount.AccountId);
 
             await _dbContext.Issuer.AddAsync(issuer);
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.Save();
+
+            return issuer.Id;
         }
 
         public async Task<IEnumerable<IssuerEntity>> GetIssuers()
         {
-            return await _dbContext.Issuer.ToListAsync();
+            return await _dbContext.Issuer
+                .Include(i => i.Assets)
+                .ToListAsync();
         }
 
         public async Task<IssuerEntity> GetIssuer(Guid id)
         {
-            return await _dbContext.Issuer.FirstOrDefaultAsync(i => i.Id == id);
+            return await _dbContext.Issuer
+                .Include(i => i.Assets)
+                .FirstOrDefaultAsync(i => i.Id == id);
         }
 
-        public async Task IssueAsset(Guid id, AssetDto asset)
+        public async Task<Guid> IssueAsset(Guid id, AssetDto asset)
         {
             var issuer = await GetIssuer(id);
 
@@ -59,6 +69,7 @@ namespace StellarShowcase.Repositories.Implementations
             // Configure issuer wallet
             var rawTx = await _stellarClient.BuildConfigureIssuerWalletRawTransaction(issuerKeyPair.AccountId);
             _ = await _stellarClient.SignSubmitRawTransaction(issuerKeyPair.PrivateKey, rawTx);
+            asset.IssuerAccountId = issuerKeyPair.AccountId;
 
             // Create trustline from distributor to issuer
             rawTx = await _stellarClient.BuildRawCreateTrustlineTransaction(asset, asset.TotalSupply, distributorPair.AccountId);
@@ -83,17 +94,17 @@ namespace StellarShowcase.Repositories.Implementations
                 CreatorTxId = txId,
             };
 
-            issuer.Assets.Add(assetEnt);
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.Asset.AddAsync(assetEnt);
+            await _dbContext.Save();
+
+            return assetEnt.Id;
         }
 
-        public async Task AuthorizeTrustline(Guid id, Guid assetId, Guid accountId)
+        public async Task AuthorizeTrustline(Guid id, Guid assetId, Guid userAccountId)
         {
-            var issuer = await _dbContext.Issuer
-                .Include(i => i.Assets)
-                .FirstOrDefaultAsync(i => i.Id == id);
+            var issuer = await GetIssuer(id);
             var asset = issuer.Assets.FirstOrDefault(a => a.Id == assetId);
-            var account = await _dbContext.Account.FirstOrDefaultAsync(a => a.Id == accountId);
+            var account = await _dbContext.UserAccount.FirstOrDefaultAsync(a => a.Id == userAccountId);
 
             var issuerKeyPair = _stellarClient.DeriveKeyPair(issuer.Mnemonic, 0);
             var accountKeyPair = _stellarClient.DeriveKeyPair(account.Mnemonic, 0);
@@ -102,18 +113,17 @@ namespace StellarShowcase.Repositories.Implementations
             {
                 IssuerAccountId = asset.IssuerAccountId,
                 UnitName = asset.UnitName,
+                TotalSupply = asset.TotalSupply,
             }, accountKeyPair.AccountId);
 
             _ = await _stellarClient.SignSubmitRawTransaction(issuerKeyPair.PrivateKey, rawTx);
         }
 
-        public async Task RevokeTrustline(Guid id, Guid assetId, Guid accountId)
+        public async Task RevokeTrustline(Guid id, Guid assetId, Guid userAccountId)
         {
-            var issuer = await _dbContext.Issuer
-                .Include(i => i.Assets)
-                .FirstOrDefaultAsync(i => i.Id == id);
+            var issuer = await GetIssuer(id);
             var asset = issuer.Assets.FirstOrDefault(a => a.Id == assetId);
-            var account = await _dbContext.Account.FirstOrDefaultAsync(a => a.Id == accountId);
+            var account = await _dbContext.UserAccount.FirstOrDefaultAsync(a => a.Id == userAccountId);
 
             var issuerKeyPair = _stellarClient.DeriveKeyPair(issuer.Mnemonic, 0);
             var accountKeyPair = _stellarClient.DeriveKeyPair(account.Mnemonic, 0);
@@ -122,30 +132,29 @@ namespace StellarShowcase.Repositories.Implementations
             {
                 IssuerAccountId = asset.IssuerAccountId,
                 UnitName = asset.UnitName,
+                TotalSupply = asset.TotalSupply,
             }, accountKeyPair.AccountId);
 
             _ = await _stellarClient.SignSubmitRawTransaction(issuerKeyPair.PrivateKey, rawTx);
         }
 
-        public async Task TransferAsset(Guid id, Guid assetId, Guid accountId, decimal amount, string memo = "")
+        public async Task<string> TransferAsset(Guid id, Guid assetId, IssuerTransferDto tx)
         {
-            var issuer = await _dbContext.Issuer
-               .Include(i => i.Assets)
-               .FirstOrDefaultAsync(i => i.Id == id);
+            var issuer = await GetIssuer(id);
             var asset = issuer.Assets.FirstOrDefault(a => a.Id == assetId);
-            var account = await _dbContext.Account.FirstOrDefaultAsync(a => a.Id == accountId);
+            var account = await _dbContext.UserAccount.FirstOrDefaultAsync(a => a.Id == tx.UserAccountId);
 
             var distributorKeyPair = _stellarClient.DeriveKeyPair(issuer.Mnemonic, 1);
             var accountKeyPair = _stellarClient.DeriveKeyPair(account.Mnemonic, 0);
-
 
             var rawTx = await _stellarClient.BuildRawAssetTransaction(new AssetDto
             {
                 IssuerAccountId = asset.IssuerAccountId,
                 UnitName = asset.UnitName,
-            },  distributorKeyPair.AccountId, accountKeyPair.AccountId, amount, memo);
+                TotalSupply = asset.TotalSupply,
+            }, distributorKeyPair.AccountId, accountKeyPair.AccountId, tx.Amount, tx.Memo);
 
-            _ = await _stellarClient.SignSubmitRawTransaction(distributorKeyPair.PrivateKey, rawTx);
+            return await _stellarClient.SignSubmitRawTransaction(distributorKeyPair.PrivateKey, rawTx);
         }
     }
 }

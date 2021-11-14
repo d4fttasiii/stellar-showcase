@@ -6,11 +6,17 @@ namespace StellarShowcase.DataAccess.Database
 {
     internal class AppDbContext : DbContext, IAppDbContext
     {
-        public DbSet<AccountEntity> Account { get; set; }
+        public DbSet<UserAccountEntity> UserAccount { get; set; }
         public DbSet<IssuerEntity> Issuer { get; set; }
+        public DbSet<AssetEntity> Asset { get; set; }
 
-        public AppDbContext(DbContextOptions options) : base(options) { }
+        public AppDbContext(DbContextOptions options) : base(options)
+        {
+        }
 
-        public async Task SaveChangesAsync() => await SaveChangesAsync();
+        public async Task Save()
+        {
+            await base.SaveChangesAsync();
+        }
     }
 }

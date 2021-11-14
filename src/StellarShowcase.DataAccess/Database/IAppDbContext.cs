@@ -4,10 +4,12 @@ using System.Threading.Tasks;
 
 namespace StellarShowcase.DataAccess.Database
 {
-    public interface IAppDbContext
+    internal interface IAppDbContext
     {
-        DbSet<AccountEntity> Account { get; }
+        DbSet<UserAccountEntity> UserAccount { get; }
         DbSet<IssuerEntity> Issuer { get; }
-        Task SaveChangesAsync();
+        DbSet<AssetEntity> Asset { get; }
+
+        Task Save();
     }
 }
