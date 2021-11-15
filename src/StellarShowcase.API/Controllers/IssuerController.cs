@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace StellarShowcase.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/issuer")]
     [ApiController]
     public class IssuerController : ControllerBase
     {

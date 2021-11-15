@@ -8,7 +8,7 @@ namespace StellarShowcase.Repositories.Interfaces
 {
     public interface IUserAccountRepository
     {
-        Task AddUserAccount(UserAccountDto userDto);
+        Task<Guid> AddUserAccount(UserAccountDto userDto);
 
         Task<IEnumerable<UserAccountEntity>> GetUserAccounts();
 

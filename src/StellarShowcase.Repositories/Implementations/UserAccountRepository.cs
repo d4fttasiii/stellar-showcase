@@ -22,7 +22,7 @@ namespace StellarShowcase.Repositories.Implementations
             _stellarClient = stellarClient;
         }
 
-        public async Task AddUserAccount(UserAccountDto userDto)
+        public async Task<Guid> AddUserAccount(UserAccountDto userDto)
         {
             var userAccount = new UserAccountEntity
             {
@@ -43,6 +43,8 @@ namespace StellarShowcase.Repositories.Implementations
 
             await _dbContext.UserAccount.AddAsync(userAccount);
             await _dbContext.Save();
+
+            return userAccount.Id;
         }
 
         public async Task<IEnumerable<UserAccountEntity>> GetUserAccounts()
