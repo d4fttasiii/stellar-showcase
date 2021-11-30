@@ -1,4 +1,6 @@
-﻿using StellarShowcase.Domain.Dto;
+﻿using stellar_dotnet_sdk.responses;
+using StellarShowcase.Domain.Dto;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace StellarShowcase.DataAccess.Blockchain
@@ -28,5 +30,15 @@ namespace StellarShowcase.DataAccess.Blockchain
         Task<string> BuildClawbackRawTransaction(AssetDto asset, decimal amount, string fromAccountId);
 
         Task<string> SignSubmitRawTransaction(string privateKey, string txRaw);
+
+        Task<string> CreateOrderRawTransaction(string accountId, AssetDto sellingAsset, AssetDto buyingAsset, decimal amount, decimal price);
+
+        Task<List<OfferResponse>> ListBuyOffers(AssetDto buyingAsset);
+
+        Task<List<OfferResponse>> ListSellOffers(AssetDto sellingAsset);
+
+        Task<List<TradeResponse>> ListAllTrades(AssetDto baseAsset, AssetDto quoteAsset);
+
+        Task<OrderBookResponse> GetOrderBook(AssetDto baseAsset, AssetDto quoteAsset);
     }
 }

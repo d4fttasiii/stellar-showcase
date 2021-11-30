@@ -1,8 +1,10 @@
 ﻿using Microsoft.Extensions.Options;
 using stellar_dotnet_sdk;
+using stellar_dotnet_sdk.responses;
 using StellarShowcase.Domain;
 using StellarShowcase.Domain.Dto;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
@@ -61,7 +63,7 @@ namespace StellarShowcase.DataAccess.Blockchain
             var stellarBalance = account.Balances.FirstOrDefault(b => b.AssetType == "native");
             var nonNativeBalances = account.Balances
                 .Where(b => b.AssetType.StartsWith("credit_alphanum"))
-                .Select(b => new Balance
+                .Select(b => new Domain.Dto.Balance
                 {
                     AssetCode = b.AssetCode,
                     AssetIssuer = b.AssetIssuer,
@@ -242,6 +244,79 @@ namespace StellarShowcase.DataAccess.Blockchain
             });
 
             return result.Hash;
+        }
+
+        public async Task<string> CreateOrderRawTransaction(string accountId, AssetDto sellingAsset, AssetDto buyingAsset, decimal amount, decimal price)
+        {
+            using var server = GetServer();
+
+            var account = await server.Accounts.Account(accountId);
+
+            var adjustAssetAmount = amount.ToString("N7", CultureInfo.InvariantCulture);
+            var adjustedPrice = price.ToString("N7", CultureInfo.InvariantCulture);
+
+            var sell = Asset.CreateNonNativeAsset(sellingAsset.UnitName, sellingAsset.IssuerAccountId);
+            var buy = Asset.CreateNonNativeAsset(buyingAsset.UnitName, buyingAsset.IssuerAccountId);
+
+            var buyOfferOp = new ManageBuyOfferOperation.Builder(sell, buy, adjustAssetAmount, adjustedPrice)
+                .SetSourceAccount(account.KeyPair)
+                .Build();
+
+            return new TransactionBuilder(account)
+               .AddOperation(buyOfferOp)
+               .AddTimeBounds(GetTimeBounds())
+               .Build()
+               .ToUnsignedEnvelopeXdrBase64();
+        }
+
+        public async Task<List<OfferResponse>> ListBuyOffers(AssetDto buyingAsset)
+        {
+            using var server = GetServer();
+
+            var offers = await server.Offers
+                .WithBuyingAsset(Asset.CreateNonNativeAsset(buyingAsset.UnitName, buyingAsset.IssuerAccountId))
+                .Limit(100)
+                .Execute();
+
+            return offers.Records;
+        }
+
+        public async Task<List<OfferResponse>> ListSellOffers(AssetDto sellingAsset)
+        {
+            using var server = GetServer();
+
+            var offers = await server.Offers
+                .WithSellingAsset(Asset.CreateNonNativeAsset(sellingAsset.UnitName, sellingAsset.IssuerAccountId))
+                .Limit(100)
+                .Execute();
+
+            return offers.Records;
+        }
+
+        public async Task<OrderBookResponse> GetOrderBook(AssetDto baseAsset, AssetDto quoteAsset)
+        {
+            using var server = GetServer();
+
+            var orderbook = await server.OrderBook
+                .BuyingAsset(Asset.CreateNonNativeAsset(baseAsset.UnitName, baseAsset.IssuerAccountId))
+                .SellingAsset(Asset.CreateNonNativeAsset(quoteAsset.UnitName, quoteAsset.IssuerAccountId))
+                .Limit(100)
+                .Execute();
+
+            return orderbook;
+        }
+
+        public async Task<List<TradeResponse>> ListAllTrades(AssetDto baseAsset, AssetDto quoteAsset)
+        {
+            using var server = GetServer();
+
+            var trades = await server.Trades
+                .BaseAsset(Asset.CreateNonNativeAsset(baseAsset.UnitName, baseAsset.IssuerAccountId))
+                .CounterAsset(Asset.CreateNonNativeAsset(quoteAsset.UnitName, quoteAsset.IssuerAccountId))
+                .Limit(100)
+                .Execute();
+
+            return trades.Records;
         }
 
         private Server GetServer()
