@@ -246,7 +246,7 @@ namespace StellarShowcase.DataAccess.Blockchain
             return result.Hash;
         }
 
-        public async Task<string> CreateOrderRawTransaction(string accountId, AssetDto sellingAsset, AssetDto buyingAsset, decimal amount, decimal price)
+        public async Task<string> CreateBuyOrderRawTransaction(string accountId, AssetDto sellingAsset, AssetDto buyingAsset, decimal amount, decimal price)
         {
             using var server = GetServer();
 
@@ -269,54 +269,51 @@ namespace StellarShowcase.DataAccess.Blockchain
                .ToUnsignedEnvelopeXdrBase64();
         }
 
-        public async Task<List<OfferResponse>> ListBuyOffers(AssetDto buyingAsset)
+        public async Task<string> CreateSellOrderRawTransaction(string accountId, AssetDto sellingAsset, AssetDto buyingAsset, decimal amount, decimal price)
         {
             using var server = GetServer();
 
-            var offers = await server.Offers
-                .WithBuyingAsset(Asset.CreateNonNativeAsset(buyingAsset.UnitName, buyingAsset.IssuerAccountId))
-                .Limit(100)
-                .Execute();
+            var account = await server.Accounts.Account(accountId);
 
-            return offers.Records;
+            var adjustAssetAmount = amount.ToString("N7", CultureInfo.InvariantCulture);
+            var adjustedPrice = price.ToString("N7", CultureInfo.InvariantCulture);
+
+            var sell = Asset.CreateNonNativeAsset(sellingAsset.UnitName, sellingAsset.IssuerAccountId);
+            var buy = Asset.CreateNonNativeAsset(buyingAsset.UnitName, buyingAsset.IssuerAccountId);
+
+            var sellOfferOp = new ManageSellOfferOperation.Builder(sell, buy, adjustAssetAmount, adjustedPrice)
+                .SetSourceAccount(account.KeyPair)
+                .Build();
+
+            return new TransactionBuilder(account)
+               .AddOperation(sellOfferOp)
+               .AddTimeBounds(GetTimeBounds())
+               .Build()
+               .ToUnsignedEnvelopeXdrBase64();
         }
 
-        public async Task<List<OfferResponse>> ListSellOffers(AssetDto sellingAsset)
-        {
-            using var server = GetServer();
-
-            var offers = await server.Offers
-                .WithSellingAsset(Asset.CreateNonNativeAsset(sellingAsset.UnitName, sellingAsset.IssuerAccountId))
-                .Limit(100)
-                .Execute();
-
-            return offers.Records;
-        }
-
-        public async Task<OrderBookResponse> GetOrderBook(AssetDto baseAsset, AssetDto quoteAsset)
+        public async Task<OrderBookDto> GetOrderBook(AssetDto selling, AssetDto buying)
         {
             using var server = GetServer();
 
             var orderbook = await server.OrderBook
-                .BuyingAsset(Asset.CreateNonNativeAsset(baseAsset.UnitName, baseAsset.IssuerAccountId))
-                .SellingAsset(Asset.CreateNonNativeAsset(quoteAsset.UnitName, quoteAsset.IssuerAccountId))
-                .Limit(100)
+                .BuyingAsset(new AssetTypeCreditAlphaNum4(buying.UnitName, buying.IssuerAccountId))
+                .SellingAsset(new AssetTypeCreditAlphaNum4(selling.UnitName, selling.IssuerAccountId))
                 .Execute();
 
-            return orderbook;
-        }
-
-        public async Task<List<TradeResponse>> ListAllTrades(AssetDto baseAsset, AssetDto quoteAsset)
-        {
-            using var server = GetServer();
-
-            var trades = await server.Trades
-                .BaseAsset(Asset.CreateNonNativeAsset(baseAsset.UnitName, baseAsset.IssuerAccountId))
-                .CounterAsset(Asset.CreateNonNativeAsset(quoteAsset.UnitName, quoteAsset.IssuerAccountId))
-                .Limit(100)
-                .Execute();
-
-            return trades.Records;
+            return new OrderBookDto
+            {
+                Asks = orderbook.Asks.Select(a => new AskDto
+                {
+                    Amount = decimal.Parse(a.Amount, NumberStyles.Float, CultureInfo.InvariantCulture),
+                    Price = decimal.Parse(a.Price, NumberStyles.Float, CultureInfo.InvariantCulture),
+                }),
+                Bids = orderbook.Asks.Select(b => new BidDto
+                {
+                    Amount = decimal.Parse(b.Amount, NumberStyles.Float, CultureInfo.InvariantCulture),
+                    Price = decimal.Parse(b.Price, NumberStyles.Float, CultureInfo.InvariantCulture),
+                }),
+            };
         }
 
         private Server GetServer()
