@@ -1,4 +1,6 @@
-﻿namespace StellarShowcase.Domain.Dto
+﻿using System;
+
+namespace StellarShowcase.Domain.Dto
 {
     public class AssetDto
     {

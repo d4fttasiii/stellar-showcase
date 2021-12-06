@@ -2,8 +2,11 @@
 using StellarShowcase.DataAccess.Blockchain;
 using StellarShowcase.DataAccess.Database;
 using StellarShowcase.Domain.Dto;
+using StellarShowcase.Domain.Entities;
 using StellarShowcase.Repositories.Interfaces;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace StellarShowcase.Repositories.Implementations
@@ -19,14 +22,71 @@ namespace StellarShowcase.Repositories.Implementations
             _stellarClient = stellarClient;
         }
 
-        public async Task<OrderBookDto> GetOrderBook(Guid baseAssetId, Guid quoteAssetId)
+        public async Task<List<MarketDto>> GetMarkets()
         {
-            var baseAsset = await _dbContext.Asset.FirstOrDefaultAsync(a => a.Id == baseAssetId);
-            var quoteAsset = await _dbContext.Asset.FirstOrDefaultAsync(a => a.Id == quoteAssetId);
+            var markets = await _dbContext.Market
+                .Select(m => new MarketDto
+                {
+                    Id = m.Id,
+                    Name = m.Name,
+                })
+                .ToListAsync();
 
-            //var baseAsset = new { IssuerAccountId = "GC4MQOLFBOGBZ4GBNF7K7E56QUKNNX3BD4VREWMPDPHHUCABFNRS2A23", UnitName = "RIO" };
-            //var quoteAsset = new { IssuerAccountId = "GC4MQOLFBOGBZ4GBNF7K7E56QUKNNX3BD4VREWMPDPHHUCABFNRS2A23", UnitName = "USD" };
+            return markets;
+        }
 
+        public async Task<MarketDto> GetMarket(Guid marketId)
+        {
+            var market = await (from m in _dbContext.Market
+                                join b in _dbContext.Asset on m.BaseAssetId equals b.Id
+                                join q in _dbContext.Asset on m.QuoteAssetId equals q.Id
+                                where m.Id == marketId
+                                select new MarketDto
+                                {
+                                    Id = m.Id,
+                                    Name = m.Name,
+                                    Base = new AssetDto
+                                    {
+                                        IssuerAccountId = b.IssuerAccountId,
+                                        TotalSupply = b.TotalSupply,
+                                        UnitName = b.UnitName,
+                                    },
+                                    Quote = new AssetDto
+                                    {
+                                        IssuerAccountId = q.IssuerAccountId,
+                                        TotalSupply = q.TotalSupply,
+                                        UnitName = q.UnitName,
+                                    },
+                                }).FirstOrDefaultAsync();
+
+            market.OrderBooks = await GetOrderBook(market.Base, market.Quote);
+
+            return market;
+        }
+
+        public async Task<Guid> CreateMarket(Guid baseAssetId, Guid quoteAssetId, string name)
+        {
+            if (await _dbContext.Market.AnyAsync(m => m.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase) ||
+                (m.BaseAssetId == baseAssetId && m.QuoteAssetId == quoteAssetId)))
+            {
+                throw new ArgumentException($"Market {name} already exists");
+            }
+
+            var market = EntityFactory.Create<MarketEntity>(m =>
+            {
+                m.Name = name;
+                m.BaseAssetId = baseAssetId;
+                m.QuoteAssetId = quoteAssetId;
+            });
+
+            await _dbContext.Market.AddAsync(market);
+            await _dbContext.Save();
+
+            return market.Id;
+        }
+
+        private async Task<OrderBookDto> GetOrderBook(AssetDto baseAsset, AssetDto quoteAsset)
+        {
             var orderBook = await _stellarClient.GetOrderBook(new AssetDto
             {
                 IssuerAccountId = baseAsset.IssuerAccountId,

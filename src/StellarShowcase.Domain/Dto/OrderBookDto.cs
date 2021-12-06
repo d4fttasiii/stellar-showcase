@@ -4,15 +4,15 @@ namespace StellarShowcase.Domain.Dto
 {
     public class OrderBookDto
     {
-        public IEnumerable<BidDto> Bids { get; set; }
-        public IEnumerable<AskDto> Asks { get; set; }
+        public IEnumerable<Buy> Buys { get; set; }
+        public IEnumerable<Sell> Sells { get; set; }
     }
 
-    public class BidDto
+    public class Buy
     {
-        public decimal Amount { get; set; }
+        public decimal Volume { get; set; }
         public decimal Price { get; set; }
     }
 
-    public class AskDto : BidDto { }
+    public class Sell : Buy { }
 }

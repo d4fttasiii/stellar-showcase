@@ -301,14 +301,14 @@ namespace StellarShowcase.DataAccess.Blockchain
 
             return new OrderBookDto
             {
-                Asks = orderbook.Asks.Select(a => new AskDto
+                Sells = orderbook.Asks.Select(a => new Sell
                 {
-                    Amount = decimal.Parse(a.Amount, NumberStyles.Float, CultureInfo.InvariantCulture),
+                    Volume = decimal.Parse(a.Amount, NumberStyles.Float, CultureInfo.InvariantCulture),
                     Price = decimal.Parse(a.Price, NumberStyles.Float, CultureInfo.InvariantCulture),
                 }),
-                Bids = orderbook.Asks.Select(b => new BidDto
+                Buys = orderbook.Asks.Select(b => new Buy
                 {
-                    Amount = decimal.Parse(b.Amount, NumberStyles.Float, CultureInfo.InvariantCulture),
+                    Volume = decimal.Parse(b.Amount, NumberStyles.Float, CultureInfo.InvariantCulture),
                     Price = decimal.Parse(b.Price, NumberStyles.Float, CultureInfo.InvariantCulture),
                 }),
             };

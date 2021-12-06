@@ -2,6 +2,7 @@
 using StellarShowcase.Domain.Dto;
 using StellarShowcase.Repositories.Interfaces;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace StellarShowcase.API.Controllers
@@ -17,16 +18,28 @@ namespace StellarShowcase.API.Controllers
             _exchangeRepository = exchangeRepository;
         }
 
-        /// <summary>
-        /// Gets orderbook for asset pairs
-        /// </summary>
-        /// <returns></returns>
-        [HttpGet, Route("{baseAssetId}/{quoteAssetId}")]
-        public async Task<ActionResult<OrderBookDto>> GetOrderbook([FromRoute] Guid baseAssetId, [FromRoute] Guid quoteAssetId)
+        [HttpGet, Route("markets")]
+        public async Task<ActionResult<List<MarketDto>>> GetMarkets()
         {
-            var orderBook = await _exchangeRepository.GetOrderBook(baseAssetId, quoteAssetId);
+            var markets = await _exchangeRepository.GetMarkets();
 
-            return Ok(orderBook);
+            return Ok(markets);
+        }
+
+        [HttpPost, Route("markets")]
+        public async Task<ActionResult<Guid>> CreateMarket([FromBody] CreateMarketDto data)
+        {
+            var marketId = await _exchangeRepository.CreateMarket(data.BaseAssetId, data.QuoteAssetId, data.Name);
+
+            return Ok(marketId);
+        }
+
+        [HttpGet, Route("markets/{id}")]
+        public async Task<ActionResult<List<MarketDto>>> GetMarket([FromRoute] Guid id)
+        {
+            var market = await _exchangeRepository.GetMarket(id);
+
+            return Ok(market);
         }
     }
 }
