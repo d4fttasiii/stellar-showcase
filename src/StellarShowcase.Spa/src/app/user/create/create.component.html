@@ -1,0 +1,29 @@
+<app-container title="New User Account">
+    <div>
+        <mat-form-field appearance="fill">
+            <mat-label>Full name</mat-label>
+            <input type="text" name="fullName" matInput [(ngModel)]="model.fullName" />
+        </mat-form-field>
+    </div>
+    <div>
+        <mat-form-field appearance="fill">
+            <mat-label>Full address</mat-label>
+            <input type="text" name="fullAddress" matInput [(ngModel)]="model.fullAddress" />
+        </mat-form-field>
+    </div>
+    <div>
+        <mat-form-field appearance="fill">
+            <mat-label>Email</mat-label>
+            <input type="email" name="email" matInput [(ngModel)]="model.email" />
+        </mat-form-field>
+    </div>
+    <div>
+        <mat-form-field appearance="fill">
+            <mat-label>Phone</mat-label>
+            <input type="tel" name="phone" matInput [(ngModel)]="model.phone" />
+        </mat-form-field>
+    </div>
+    <div>
+        <button type="button" color="primary" mat-raised-button (click)="submit()">Submit</button>
+    </div>
+</app-container>

@@ -28,6 +28,7 @@ namespace StellarShowcase.API
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+            services.AddCors();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "StellarShowcase.API", Version = "v1" });
@@ -45,6 +46,13 @@ namespace StellarShowcase.API
         {
             app.UseSwagger();
             app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "StellarShowcase.API v1"));
+            app.UseCors(builder =>
+            {
+                builder
+                    .AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader();
+            });
             app.UseRouting();
             app.UseEndpoints(endpoints =>
             {

@@ -28,6 +28,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MenuItemComponent } from './menu-item/menu-item.component';
 import { MenuComponent } from './menu/menu.component';
+import { ContainerComponent } from './container/container.component';
 
 // import {MatButtonToggleModule} from '@angular/material/button-toggle';
 const MAT_MODULES = [
@@ -63,11 +64,12 @@ const MAT_MODULES = [
 const EXPORTS = [
   MenuComponent,
   MenuItemComponent,
+  ContainerComponent,
 ];
 
 
 @NgModule({
-  declarations: [...EXPORTS],
+  declarations: [...EXPORTS, ContainerComponent],
   imports: [CommonModule, FormsModule, ...MAT_MODULES],
   exports: [FormsModule, ...EXPORTS, ...MAT_MODULES],
 })

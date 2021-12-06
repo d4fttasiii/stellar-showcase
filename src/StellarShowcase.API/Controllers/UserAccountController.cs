@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using StellarShowcase.Domain.Dto;
-using StellarShowcase.Domain.Entities;
 using StellarShowcase.Repositories.Interfaces;
 using System;
 using System.Collections.Generic;
