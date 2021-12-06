@@ -6,6 +6,8 @@ namespace StellarShowcase.Domain.Entities
     [Table("Asset")]
     public class AssetEntity : EntityBase
     {
+        public AssetEntity() { }
+
         public Guid IssuerId { get; set; }
         public string IssuerAccountId { get; set; }
         public string UnitName { get; set; }

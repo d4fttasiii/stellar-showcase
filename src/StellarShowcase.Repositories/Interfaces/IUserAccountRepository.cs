@@ -17,5 +17,9 @@ namespace StellarShowcase.Repositories.Interfaces
         Task CreateTrustline(Guid id, Guid issuerId, Guid assetId, decimal? limit = null);
 
         Task TransferAsset(Guid id, Guid issuerId, Guid assetId, string recipientAccountId, decimal amount, string memo = "");
+
+        Task<string> CreateBuyOrder(Guid userAccountId, Guid marketId, decimal volume, decimal price);
+
+        Task<string> CreateSellOrder(Guid userAccountId, Guid marketId, decimal volume, decimal price);
     }
 }

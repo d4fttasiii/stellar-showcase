@@ -9,6 +9,8 @@ namespace StellarShowcase.DataAccess.Database
         public DbSet<UserAccountEntity> UserAccount { get; set; }
         public DbSet<IssuerEntity> Issuer { get; set; }
         public DbSet<AssetEntity> Asset { get; set; }
+        public DbSet<OrderEntity> Order { get; set; }
+        public DbSet<MarketEntity> Market { get; set; }
 
         public AppDbContext(DbContextOptions options) : base(options)
         {

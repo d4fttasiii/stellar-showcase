@@ -24,12 +24,10 @@ namespace StellarShowcase.Repositories.Implementations
 
         public async Task<Guid> AddIssuer()
         {
-            var issuer = new IssuerEntity
+            var issuer = EntityFactory.Create<IssuerEntity>(i =>
             {
-                Id = Guid.NewGuid(),
-                Created = DateTime.Now,
-                Mnemonic = _stellarClient.GenerateMnemonic(),
-            };
+                i.Mnemonic = _stellarClient.GenerateMnemonic();
+            });
             //
             // Send 10.000 testnet XLM to both addresses
             //
@@ -65,11 +63,12 @@ namespace StellarShowcase.Repositories.Implementations
             // Make sure these are funded on the stellar testnet
             var issuerKeyPair = _stellarClient.DeriveKeyPair(issuer.Mnemonic, 0);
             var distributorPair = _stellarClient.DeriveKeyPair(issuer.Mnemonic, 1);
+            asset.IssuerAccountId = issuerKeyPair.AccountId;
 
             // Configure issuer wallet
             var rawTx = await _stellarClient.BuildConfigureIssuerWalletRawTransaction(issuerKeyPair.AccountId);
-            _ = await _stellarClient.SignSubmitRawTransaction(issuerKeyPair.PrivateKey, rawTx);
-            asset.IssuerAccountId = issuerKeyPair.AccountId;
+            if (!string.IsNullOrWhiteSpace(rawTx))
+                await _stellarClient.SignSubmitRawTransaction(issuerKeyPair.PrivateKey, rawTx);
 
             // Create trustline from distributor to issuer
             rawTx = await _stellarClient.BuildRawCreateTrustlineTransaction(asset, asset.TotalSupply, distributorPair.AccountId);
@@ -83,16 +82,14 @@ namespace StellarShowcase.Repositories.Implementations
             rawTx = await _stellarClient.BuildRawCreateAssetTransaction(asset, distributorPair.AccountId);
             var txId = await _stellarClient.SignSubmitRawTransaction(issuerKeyPair.PrivateKey, rawTx);
 
-            var assetEnt = new AssetEntity
+            var assetEnt = EntityFactory.Create<AssetEntity>(a =>
             {
-                Id = Guid.NewGuid(),
-                Created = DateTime.Now,
-                IssuerId = issuer.Id,
-                IssuerAccountId = issuerKeyPair.AccountId,
-                TotalSupply = asset.TotalSupply,
-                UnitName = asset.UnitName,
-                CreatorTxId = txId,
-            };
+                a.IssuerId = issuer.Id;
+                a.IssuerAccountId = issuerKeyPair.AccountId;
+                a.TotalSupply = asset.TotalSupply;
+                a.UnitName = asset.UnitName;
+                a.CreatorTxId = txId;
+            });
 
             await _dbContext.Asset.AddAsync(assetEnt);
             await _dbContext.Save();

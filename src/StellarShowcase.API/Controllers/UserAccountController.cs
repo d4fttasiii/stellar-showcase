@@ -66,5 +66,21 @@ namespace StellarShowcase.API.Controllers
 
             return Ok();
         }
+
+        [HttpPost, Route("{id}/orders/buy")]
+        public async Task<ActionResult<string>> CreateBuyOrder([FromRoute] Guid id, [FromBody] CreateBuyOrderDto data)
+        {
+            var txId = await _userAccountRepository.CreateBuyOrder(id, data.MarketId, data.Volume, data.Price);
+
+            return Ok(txId);
+        }
+
+        [HttpPost, Route("{id}/orders/sell")]
+        public async Task<ActionResult<string>> CreateSellOrder([FromRoute] Guid id, [FromBody] CreateSellOrderDto data)
+        {
+            var txId = await _userAccountRepository.CreateSellOrder(id, data.MarketId, data.Volume, data.Price);
+
+            return Ok(txId);
+        }
     }
 }
