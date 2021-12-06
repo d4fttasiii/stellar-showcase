@@ -27,7 +27,7 @@ export class ListComponent implements OnInit {
   }
 
   goToDetail(id: string){
-    this.router.navigate(['user', id]);
+    this.router.navigate(['user', 'details', id]);
   }
 
   goToCreate(){

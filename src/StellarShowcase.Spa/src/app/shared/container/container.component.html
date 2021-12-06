@@ -1,9 +1,9 @@
 <div class="mg-t10">
     <mat-card>
         <mat-card-header class="ai-c">
-            <!-- <div mat-card-avatar *ngIf="icon">
-                <app-fa-icon class="fa-2x" [icon]="icon"></app-fa-icon>
-            </div> -->
+            <div mat-card-avatar *ngIf="icon">
+                <i class="fa fa-fw fa-2x" [ngClass]="icon"></i>
+            </div>
             <mat-card-title [class.mg-b0]="!subTitle">{{ title }}</mat-card-title>
             <mat-card-subtitle *ngIf="subTitle">{{ subTitle }}</mat-card-subtitle>
         </mat-card-header>

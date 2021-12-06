@@ -1,0 +1,3 @@
+<app-container *ngIf="userAccount" icon="fa-address-card" [title]="userAccount.fullName">
+    <pre>{{userAccount | json}}</pre>
+</app-container>
