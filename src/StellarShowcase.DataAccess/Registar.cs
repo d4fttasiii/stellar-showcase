@@ -19,7 +19,7 @@ namespace StellarShowcase.DataAccess
 
         private static void AddDatabase(this IServiceCollection services)
         {
-            services.AddDbContext<AppDbContext>(opt => opt.UseInMemoryDatabase("ShowcaseDb"));
+            services.AddDbContext<AppDbContext>(opt => opt.UseSqlite("Filename=C:/temp/db/showcase.db"));
             services.AddScoped<IAppDbContext, AppDbContext>();
         }
     }

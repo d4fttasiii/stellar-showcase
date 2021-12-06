@@ -12,6 +12,7 @@ namespace StellarShowcase.DataAccess.Database
 
         public AppDbContext(DbContextOptions options) : base(options)
         {
+            Database.EnsureCreated();
         }
 
         public async Task Save()

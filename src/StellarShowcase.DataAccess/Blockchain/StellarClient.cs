@@ -1,10 +1,8 @@
 ﻿using Microsoft.Extensions.Options;
 using stellar_dotnet_sdk;
-using stellar_dotnet_sdk.responses;
 using StellarShowcase.Domain;
 using StellarShowcase.Domain.Dto;
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
@@ -63,7 +61,7 @@ namespace StellarShowcase.DataAccess.Blockchain
             var stellarBalance = account.Balances.FirstOrDefault(b => b.AssetType == "native");
             var nonNativeBalances = account.Balances
                 .Where(b => b.AssetType.StartsWith("credit_alphanum"))
-                .Select(b => new Domain.Dto.Balance
+                .Select(b => new Balance
                 {
                     AssetCode = b.AssetCode,
                     AssetIssuer = b.AssetIssuer,
