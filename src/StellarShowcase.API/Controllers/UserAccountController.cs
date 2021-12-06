@@ -24,7 +24,7 @@ namespace StellarShowcase.API.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<UserAccountEntity>>> GetAll()
+        public async Task<ActionResult<IEnumerable<UserAccountDto>>> GetAll()
         {
             var userAccounts = await _userAccountRepository.GetUserAccounts();
 
@@ -37,11 +37,11 @@ namespace StellarShowcase.API.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet, Route("{id}")]
-        public async Task<ActionResult<IssuerEntity>> Get(Guid id)
+        public async Task<ActionResult<UserAccountDto>> Get(Guid id)
         {
-            var issuer = await _userAccountRepository.GetUserAccount(id);
+            var userAccount = await _userAccountRepository.GetUserAccount(id);
 
-            return Ok(issuer);
+            return Ok(userAccount);
         }
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace StellarShowcase.API.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPost]
-        public async Task<ActionResult<Guid>> Create([FromBody] UserAccountDto data)
+        public async Task<ActionResult<Guid>> Create([FromBody] CreateUserAccountDto data)
         {
             var id = await _userAccountRepository.AddUserAccount(data);
 

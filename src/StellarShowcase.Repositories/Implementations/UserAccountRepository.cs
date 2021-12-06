@@ -22,7 +22,7 @@ namespace StellarShowcase.Repositories.Implementations
             _stellarClient = stellarClient;
         }
 
-        public async Task<Guid> AddUserAccount(UserAccountDto userDto)
+        public async Task<Guid> AddUserAccount(CreateUserAccountDto userDto)
         {
             var userAccount = EntityFactory.Create<UserAccountEntity>(ua =>
             {
@@ -45,16 +45,38 @@ namespace StellarShowcase.Repositories.Implementations
             return userAccount.Id;
         }
 
-        public async Task<IEnumerable<UserAccountEntity>> GetUserAccounts()
+        public async Task<IEnumerable<UserAccountDto>> GetUserAccounts()
         {
             return await _dbContext.UserAccount
-                .Include(u => u.Orders)
+                .Select(u => new UserAccountDto
+                {
+                    Id = u.Id,
+                    Email = u.Email,
+                    Phone = u.Phone,
+                    FullName = u.FullName,
+                    FullAddress = u.FullAddress,
+                })
                 .ToListAsync();
         }
 
-        public async Task<UserAccountEntity> GetUserAccount(Guid id)
+        public async Task<UserAccountDto> GetUserAccount(Guid id)
         {
-            return await _dbContext.UserAccount.FirstOrDefaultAsync(i => i.Id == id);
+            var userAccount = await _dbContext.UserAccount
+                .Include(u => u.Orders)
+                .FirstOrDefaultAsync(i => i.Id == id);
+
+            var accountKeyPair = _stellarClient.DeriveKeyPair(userAccount.Mnemonic, 0);
+            var account = await _stellarClient.GetAccount(accountKeyPair.AccountId);
+
+            return new UserAccountDto
+            {
+                Id = userAccount.Id,
+                Email = userAccount.Email,
+                FullAddress = userAccount.FullAddress,
+                Phone = userAccount.Phone,
+                FullName = userAccount.FullName,
+                Account = account,
+            };
         }
 
         public async Task CreateTrustline(Guid id, Guid issuerId, Guid assetId, decimal? limit = null)
@@ -150,7 +172,7 @@ namespace StellarShowcase.Repositories.Implementations
                 o.Price = price;
                 o.Volume = volume;
                 o.TxId = txId;
-            });           
+            });
 
             await _dbContext.Order.AddAsync(order);
             await _dbContext.Save();

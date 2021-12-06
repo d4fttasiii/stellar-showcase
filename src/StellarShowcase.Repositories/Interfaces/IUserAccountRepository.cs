@@ -1,5 +1,4 @@
 ﻿using StellarShowcase.Domain.Dto;
-using StellarShowcase.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -8,11 +7,11 @@ namespace StellarShowcase.Repositories.Interfaces
 {
     public interface IUserAccountRepository
     {
-        Task<Guid> AddUserAccount(UserAccountDto userDto);
+        Task<Guid> AddUserAccount(CreateUserAccountDto userDto);
 
-        Task<IEnumerable<UserAccountEntity>> GetUserAccounts();
+        Task<IEnumerable<UserAccountDto>> GetUserAccounts();
 
-        Task<UserAccountEntity> GetUserAccount(Guid id);
+        Task<UserAccountDto> GetUserAccount(Guid id);
 
         Task CreateTrustline(Guid id, Guid issuerId, Guid assetId, decimal? limit = null);
 
