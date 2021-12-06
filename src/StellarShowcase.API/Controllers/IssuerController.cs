@@ -24,7 +24,7 @@ namespace StellarShowcase.API.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<IssuerEntity>>> GetAll()
+        public async Task<ActionResult<IEnumerable<IssuerDto>>> GetAll()
         {
             var issuer = await _issuerRepository.GetIssuers();
 
@@ -37,7 +37,7 @@ namespace StellarShowcase.API.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet, Route("{id}")]
-        public async Task<ActionResult<IssuerEntity>> Get(Guid id)
+        public async Task<ActionResult<IssuerDto>> Get(Guid id)
         {
             var issuer = await _issuerRepository.GetIssuer(id);
 
@@ -63,7 +63,7 @@ namespace StellarShowcase.API.Controllers
         /// <param name="asset">Asset details</param>
         /// <returns></returns>
         [HttpPost, Route("{id}/asset")]
-        public async Task<ActionResult<Guid>> IssueAsset(Guid id, [FromBody] AssetDto asset)
+        public async Task<ActionResult<Guid>> IssueAsset(Guid id, [FromBody] CreateAssetDto asset)
         {
             var assetId = await _issuerRepository.IssueAsset(id, asset);
 

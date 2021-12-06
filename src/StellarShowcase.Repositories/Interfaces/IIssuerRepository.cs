@@ -1,5 +1,4 @@
 ﻿using StellarShowcase.Domain.Dto;
-using StellarShowcase.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -10,11 +9,11 @@ namespace StellarShowcase.Repositories.Interfaces
     {
         Task<Guid> AddIssuer();
 
-        Task<IEnumerable<IssuerEntity>> GetIssuers();
+        Task<IEnumerable<IssuerDto>> GetIssuers();
 
-        Task<IssuerEntity> GetIssuer(Guid id);
+        Task<IssuerDto> GetIssuer(Guid id);
 
-        Task<Guid> IssueAsset(Guid id, AssetDto asset);
+        Task<Guid> IssueAsset(Guid id, CreateAssetDto asset);
 
         Task AuthorizeTrustline(Guid id, Guid assetId, Guid userAccountId);
 
