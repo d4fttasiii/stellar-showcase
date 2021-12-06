@@ -2,3 +2,72 @@
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+
+$base-gap: 5;
+
+@for $i from 0 through 10 {
+    .mg-#{$i} {
+        margin: #{($base-gap * $i)}px !important;
+    }
+
+    .mg-l#{$i} {
+        margin-left: #{($base-gap * $i)}px !important;
+    }
+
+    .mg-r#{$i} {
+        margin-right: #{($base-gap * $i)}px !important;
+    }
+
+    .mg-b#{$i} {
+        margin-bottom: #{($base-gap * $i)}px !important;
+    }
+
+    .mg-t#{$i} {
+        margin-top: #{($base-gap * $i)}px !important;
+    }
+
+    .mg-y#{$i} {
+        margin-top: #{($base-gap * $i)}px !important;
+        margin-bottom: #{($base-gap * $i)}px !important;
+    }
+
+    .mg-x#{$i} {
+        margin-left: #{($base-gap * $i)}px !important;
+        margin-right: #{($base-gap * $i)}px !important;
+    }
+
+    .pd-#{$i} {
+        padding: #{($base-gap * $i)}px !important;
+    }
+}
+
+.ta-r {
+    text-align: right;
+}
+
+.ta-c {
+    text-align: center;
+}
+
+@for $i from 1 through 10 {
+    .w-#{$i}0 {
+        width: #{(10 * $i)}+ '%' !important;
+    }
+}
+
+.flx {
+    display: flex;
+}
+
+.ai-c {
+    align-items: center;
+}
+
+.va-m {
+    vertical-align: middle;
+}
+
+.mat-icon-button {
+    line-height: 20px !important;
+}
