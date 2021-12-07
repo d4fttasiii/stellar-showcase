@@ -261,7 +261,7 @@ namespace StellarShowcase.DataAccess.Blockchain
             var account = await server.Accounts.Account(accountId);
 
             var adjustAssetAmount = amount.ToString("N7", CultureInfo.InvariantCulture);
-            var adjustedPrice = price.ToString("N7", CultureInfo.InvariantCulture);
+            var adjustedPrice = price.ToString("N7",  CultureInfo.InvariantCulture);
 
             var sell = Asset.CreateNonNativeAsset(sellingAsset.UnitName, sellingAsset.IssuerAccountId);
             var buy = Asset.CreateNonNativeAsset(buyingAsset.UnitName, buyingAsset.IssuerAccountId);
@@ -315,12 +315,14 @@ namespace StellarShowcase.DataAccess.Blockchain
                 {
                     Volume = decimal.Parse(a.Amount, NumberStyles.Float, CultureInfo.InvariantCulture),
                     Price = decimal.Parse(a.Price, NumberStyles.Float, CultureInfo.InvariantCulture),
-                }),
-                Buys = orderbook.Asks.Select(b => new Buy
+                })
+                .OrderByDescending(s => s.Price),
+                Buys = orderbook.Bids.Select(b => new Buy
                 {
-                    Volume = decimal.Parse(b.Amount, NumberStyles.Float, CultureInfo.InvariantCulture),
+                    Volume = decimal.Parse(b.Amount, NumberStyles.Float, CultureInfo.InvariantCulture) / decimal.Parse(b.Price, NumberStyles.Float, CultureInfo.InvariantCulture),
                     Price = decimal.Parse(b.Price, NumberStyles.Float, CultureInfo.InvariantCulture),
-                }),
+                })
+                .OrderBy(b => b.Price),
             };
         }
 

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { CreateUserAccountDto, UserAccountDto } from '../models/dto';
 
+import { CreateBuyOrderDto, CreateSellOrderDto, CreateUserAccountDto, UserAccountDto } from '../models/dto';
 import { ApiService } from './api.service';
 
 @Injectable({
@@ -29,4 +29,12 @@ export class UserAccountService {
     return this.api.post(`${this.controllerName}/${id}/asset/${assetId}/create-trustline/${issuerId}`, {});
   }
 
+  createBuyOrder(id: string, order: CreateBuyOrderDto): Observable<string> {
+    return this.api.post(`${this.controllerName}/${id}/orders/buy`, order);
+  }
+
+  createSellOrder(id: string, order: CreateSellOrderDto): Observable<string> {
+    return this.api.post(`${this.controllerName}/${id}/orders/sell`, order);
+  }
+  
 }

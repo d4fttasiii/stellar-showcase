@@ -1,9 +1,10 @@
 <app-container title="New User Account" icon="fa-edit">
-    <form autocomplete="false" >
+    <form autocomplete="false">
         <div>
             <mat-form-field appearance="standard" class="w-mn30">
                 <mat-label>Full name</mat-label>
-                <input type="text" name="fullName" autocomplete="false" required matInput [(ngModel)]="model.fullName" />
+                <input type="text" name="fullName" autocomplete="false" required matInput
+                    [(ngModel)]="model.fullName" />
             </mat-form-field>
         </div>
         <div>
@@ -28,6 +29,7 @@
         <div>
             <button type="button" color="primary" mat-raised-button (click)="submit()">Submit</button>
         </div>
-        <input autocomplete="off" autofill="off" style="display: none;" name="anything-but-a-keyword-the-browser-may-check-against" />
+        <input autocomplete="off" autofill="off" style="display: none;"
+            name="anything-but-a-keyword-the-browser-may-check-against" />
     </form>
 </app-container>

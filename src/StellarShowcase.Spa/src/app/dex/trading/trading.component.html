@@ -1,21 +1,56 @@
-<app-container title="Trading" icon="fa-exchange-alt" *ngIf="loaded">
-    <div class="w-100 mg-b5">
-        <button mat-raised-button color="accent" [matMenuTriggerFor]="menu">Impersonate</button>
-        <mat-menu #menu="matMenu">
-            <button mat-menu-item *ngFor="let user of userAccounts" (click)="impersonate(user)">{{ user.fullName }}</button>
-        </mat-menu>
-
-        <span class="mg-x3" *ngIf="impersonatedUserAccount">Trading as {{ impersonatedUserAccount.fullName }}</span>
-
-        <!-- <mat-chip-list #chipList aria-label="Fruit selection">
-            <mat-chip *ngIf="impersonatedUserAccount" [selectable]="selectable"
-                     [removable]="removable" (removed)="remove(fruit)">
-                     {{ impersonatedUserAccount.fullName }}
-              <button matChipRemove>
-                <mat-icon>cancel</mat-icon>
-              </button>
-            </mat-chip>
-          </mat-chip-list> -->
+<app-container title="Trading: {{ market.name }}" icon="fa-exchange-alt" *ngIf="loaded">
+    <div class="w-100 mg-b5 flx">
+        <div class="mg-r3"><button mat-raised-button color="accent" [matMenuTriggerFor]="menu">Impersonate</button>
+            <mat-menu #menu="matMenu">
+                <button mat-menu-item *ngFor="let user of userAccounts" (click)="impersonate(user)">{{ user.fullName
+                    }}</button>
+            </mat-menu>
+        </div>
+        <div>
+            <mat-chip-list #chipList>
+                <mat-chip color="primary" [selected]="true" *ngIf="impersonatedUserAccount"
+                    (removed)="stopImpersonating()">
+                    {{ impersonatedUserAccount.fullName }}
+                    <button matChipRemove>
+                        <mat-icon>cancel</mat-icon>
+                    </button>
+                </mat-chip>
+            </mat-chip-list>
+        </div>
     </div>
     <hr />
+    <div class="w-100 mg-5 flx">
+        <div class="w-100 pd-5">
+            <div class="mg-b3">
+                <button type="button" mat-raised-button [color]="isBuy ? 'accent' : 'warn'" (click)="toggle()">
+                    <span *ngIf="isBuy">
+                        Buy
+                    </span>
+                    <span *ngIf="!isBuy">
+                        Sell
+                    </span>
+                </button>
+                <span></span>
+            </div>
+            <div>
+                <mat-form-field appearance="standard" class="w-mn30">
+                    <mat-label>Volume</mat-label>
+                    <input type="number" autocomplete="off" name="volume" matInput required
+                        [(ngModel)]="model.volume" />
+                </mat-form-field>
+            </div>
+            <div>
+                <mat-form-field appearance="standard" class="w-mn30">
+                    <mat-label>Price</mat-label>
+                    <input type="number" autocomplete="off" name="price" matInput [(ngModel)]="model.price" />
+                </mat-form-field>
+            </div>
+            <div class="mg-y2">
+                <button type="button" color="primary" [disabled]="!impersonatedUserAccount" mat-raised-button (click)="submit()">Submit</button>
+            </div>
+        </div>
+        <div class="w-100 pd-5">
+            <pre>{{ market.orderBooks | json }}</pre>
+        </div>
+    </div>
 </app-container>

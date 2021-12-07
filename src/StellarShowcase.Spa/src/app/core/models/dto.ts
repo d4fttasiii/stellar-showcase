@@ -85,3 +85,11 @@ export interface MarketDto {
     quote: AssetDto;
     orderBooks: OrderBookDto;
 }
+
+export interface CreateBuyOrderDto {
+    marketId: string;
+    price: number;
+    volume: number;
+}
+
+export interface CreateSellOrderDto extends CreateBuyOrderDto {}
