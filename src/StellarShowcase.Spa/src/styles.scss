@@ -54,6 +54,9 @@ $base-gap: 5;
     .w-#{$i}0 {
         width: #{(10 * $i)}+ '%' !important;
     }
+    .w-mn#{$i}0 {
+        min-width: #{(10 * $i)}+ '%' !important;
+    }
 }
 
 .flx {

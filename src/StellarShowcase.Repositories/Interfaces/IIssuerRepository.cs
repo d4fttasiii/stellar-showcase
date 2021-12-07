@@ -13,7 +13,7 @@ namespace StellarShowcase.Repositories.Interfaces
 
         Task<IssuerDto> GetIssuer(Guid id);
 
-        Task<Guid> IssueAsset(Guid id, CreateAssetDto asset);
+        Task<Guid> IssueAsset(Guid id, UpsertAssetDto asset);
 
         Task AuthorizeTrustline(Guid id, Guid assetId, Guid userAccountId);
 

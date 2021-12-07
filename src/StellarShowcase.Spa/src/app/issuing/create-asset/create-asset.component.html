@@ -1,0 +1,30 @@
+<app-container title="Create Asset" icon="fa-hammer">
+    <div>
+        <mat-form-field appearance="standard" class="w-mn30">
+            <mat-label>Unitname</mat-label>
+            <input type="text" name="unitName" required matInput autocomplete="off" [(ngModel)]="model.unitName" />
+        </mat-form-field>
+    </div>
+    <div>
+        <mat-form-field appearance="standard" class="w-mn30">
+            <mat-label>Total supply</mat-label>
+            <input type="number" name="totalSupply" required matInput autocomplete="off"
+                [(ngModel)]="model.totalSupply" />
+        </mat-form-field>
+    </div>
+    <div class="mg-x1 mg-y2">
+        <mat-checkbox name="isAuthRequired" [(ngModel)]="model.isAuthRequired">Authorization required</mat-checkbox>
+    </div>
+    <div class="mg-x1 mg-y2">
+        <mat-checkbox name="isAuthRevocable" [(ngModel)]="model.isAuthRevocable">Authorization revocable</mat-checkbox>
+    </div>
+    <div class="mg-x1 mg-y2">
+        <mat-checkbox name="isAuthImmutable" [(ngModel)]="model.isAuthImmutable">Authorization immutable</mat-checkbox>
+    </div>
+    <div class="mg-x1 mg-y2">
+        <mat-checkbox name="isClawbackEnabled" [(ngModel)]="model.isClawbackEnabled">Clawback enabled</mat-checkbox>
+    </div>
+    <div class="mg-y2">
+        <button type="button" color="primary" mat-raised-button (click)="submit()">Submit</button>
+    </div>
+</app-container>

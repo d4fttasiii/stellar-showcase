@@ -26,11 +26,11 @@ export class ListComponent implements OnInit {
       );
   }
 
-  goToDetail(id: string){
-    this.router.navigate(['user', 'details', id]);
+  goToDetail(id: string) {
+    this.router.navigate(['user', id, 'details']);
   }
 
-  goToCreate(){
+  goToCreate() {
     this.router.navigate(['user', 'create'])
   }
 }

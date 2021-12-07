@@ -29,7 +29,7 @@ export class CreateComponent implements OnInit {
   submit() {
     this.userAccountService
       .create(this.model)
-      .subscribe(response => {
+      .subscribe(() => {
         this.snackBar.open('User account created!', 'OK', {
           duration: 5000,
           horizontalPosition: 'center',

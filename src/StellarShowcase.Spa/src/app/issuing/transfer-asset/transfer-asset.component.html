@@ -1,0 +1,38 @@
+<app-container title="Create Asset" icon="fa-money-check-alt" *ngIf="loaded">
+    <div>
+        <mat-form-field appearance="standard" class="w-mn30">
+            <mat-label>Choose asset</mat-label>
+            <mat-select name="assetId" required [(ngModel)]="assetId">
+                <mat-option *ngFor="let asset of issuer.assets" [value]="asset.id">
+                    {{asset.unitName}}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+    </div>
+
+    <div>
+        <mat-form-field appearance="standard" class="w-mn30">
+            <mat-label>Choose recepeient</mat-label>
+            <mat-select name="userAccountId" required [(ngModel)]="model.userAccountId">
+                <mat-option *ngFor="let userAccount of userAccounts" [value]="userAccount.id">
+                    {{userAccount.fullName}}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+    </div>
+    <div>
+        <mat-form-field appearance="standard" class="w-mn30">
+            <mat-label>Amount</mat-label>
+            <input type="number" autocomplete="off" name="amount" matInput required [(ngModel)]="model.amount" />
+        </mat-form-field>
+    </div>
+    <div>
+        <mat-form-field appearance="standard" class="w-mn30">
+            <mat-label>Memo</mat-label>
+            <input type="text" autocomplete="off" name="memo" matInput [(ngModel)]="model.memo" />
+        </mat-form-field>
+    </div>
+    <div class="mg-y2">
+        <button type="button" color="primary" mat-raised-button (click)="submit()">Submit</button>
+    </div>
+</app-container>

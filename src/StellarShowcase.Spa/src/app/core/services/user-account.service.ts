@@ -25,4 +25,8 @@ export class UserAccountService {
     return this.api.post(this.controllerName, data);
   }
 
+  createTrustline(id: string, assetId: string, issuerId: string): Observable<string> {
+    return this.api.post(`${this.controllerName}/${id}/asset/${assetId}/create-trustline/${issuerId}`, {});
+  }
+
 }

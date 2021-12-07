@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { UserAccountDto } from '../../core/models/dto';
 import { UserAccountService } from '../../core/services/user-account.service';
@@ -15,7 +15,8 @@ export class DetailsComponent implements OnInit {
 
   constructor(
     private userAccountService: UserAccountService,
-    private activatedRoute: ActivatedRoute) { }
+    private activatedRoute: ActivatedRoute,
+    private router: Router) { }
 
   ngOnInit(): void {
     this.activatedRoute.params.subscribe(
@@ -23,6 +24,10 @@ export class DetailsComponent implements OnInit {
         .get(params['id'])
         .subscribe(result => this.userAccount = result),
     );
+  }
+
+  goToAddAsset(){
+    this.router.navigate(['user', this.userAccount.id, 'add-asset']);
   }
 
 }

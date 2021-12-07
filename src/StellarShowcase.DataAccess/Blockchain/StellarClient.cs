@@ -74,27 +74,37 @@ namespace StellarShowcase.DataAccess.Blockchain
             {
                 AccountId = account.AccountId,
                 SequenceNumber = account.SequenceNumber,
+                IsAuthRequired = account.Flags.AuthRequired,
+                IsAuthRevocable = account.Flags.AuthRevocable,
+                IsAuthImmutable = account.Flags.AuthImmutable,
+                IsClawbackEnabled = account.Flags.AuthClawback,
                 NativeBalance = string.IsNullOrEmpty(stellarBalance?.BalanceString) ? 0m : decimal.Parse(stellarBalance.BalanceString, NumberStyles.Any, CultureInfo.InvariantCulture),
                 NonNativeBalances = nonNativeBalances,
             };
         }
 
-        public async Task<string> BuildConfigureIssuerWalletRawTransaction(string issuerAccountId)
+        public async Task<string> BuildConfigureIssuerWalletRawTransaction(string issuerAccountId, UpsertAssetDto config)
         {
             using var server = GetServer();
             var issuerAccount = await server.Accounts.Account(issuerAccountId);
 
-            if (issuerAccount.Flags.AuthRequired && issuerAccount.Flags.AuthRevocable)
+            if (config.IsAuthRequired == issuerAccount.Flags.AuthRequired && 
+                config.IsAuthRevocable  == issuerAccount.Flags.AuthRevocable &&
+                config.IsAuthImmutable == issuerAccount.Flags.AuthImmutable &&
+                config.IsClawbackEnabled == issuerAccount.Flags.AuthClawback)
                 return string.Empty;
+            
+            var flags =
+                (config.IsAuthRequired ? (uint)stellar_dotnet_sdk.xdr.AccountFlags.AccountFlagsEnum.AUTH_REQUIRED_FLAG : 0) +
+                (config.IsAuthRevocable ? (uint)stellar_dotnet_sdk.xdr.AccountFlags.AccountFlagsEnum.AUTH_REVOCABLE_FLAG : 0) +
+                (config.IsAuthImmutable ? (uint)stellar_dotnet_sdk.xdr.AccountFlags.AccountFlagsEnum.AUTH_IMMUTABLE_FLAG : 0) +
+                (config.IsClawbackEnabled ? (uint)stellar_dotnet_sdk.xdr.AccountFlags.AccountFlagsEnum.AUTH_CLAWBACK_ENABLED_FLAG : 0);
 
-            var txBuilder = new TransactionBuilder(issuerAccount);
             var setOp = new SetOptionsOperation.Builder()
-                .SetSetFlags(
-                    (uint)stellar_dotnet_sdk.xdr.AccountFlags.AccountFlagsEnum.AUTH_REQUIRED_FLAG +
-                    (uint)stellar_dotnet_sdk.xdr.AccountFlags.AccountFlagsEnum.AUTH_REVOCABLE_FLAG +
-                    (uint)stellar_dotnet_sdk.xdr.AccountFlags.AccountFlagsEnum.AUTH_CLAWBACK_ENABLED_FLAG)
+                .SetSetFlags(flags)
                 .Build();
 
+            var txBuilder = new TransactionBuilder(issuerAccount);
             var tx = txBuilder
                 .AddOperation(setOp)
                 .AddTimeBounds(GetTimeBounds())

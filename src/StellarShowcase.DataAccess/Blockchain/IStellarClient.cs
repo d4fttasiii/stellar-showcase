@@ -1,6 +1,4 @@
-﻿using stellar_dotnet_sdk.responses;
-using StellarShowcase.Domain.Dto;
-using System.Collections.Generic;
+﻿using StellarShowcase.Domain.Dto;
 using System.Threading.Tasks;
 
 namespace StellarShowcase.DataAccess.Blockchain
@@ -15,7 +13,7 @@ namespace StellarShowcase.DataAccess.Blockchain
 
         Task FundAccount(string accountId);
 
-        Task<string> BuildConfigureIssuerWalletRawTransaction(string issuerAccountId);
+        Task<string> BuildConfigureIssuerWalletRawTransaction(string issuerAccountId, UpsertAssetDto config);
 
         Task<string> BuildRawCreateAssetTransaction(AssetDto asset, string distributorAccountId);
 

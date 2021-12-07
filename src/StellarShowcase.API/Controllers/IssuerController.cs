@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using StellarShowcase.Domain.Dto;
-using StellarShowcase.Domain.Entities;
 using StellarShowcase.Repositories.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -63,7 +62,7 @@ namespace StellarShowcase.API.Controllers
         /// <param name="asset">Asset details</param>
         /// <returns></returns>
         [HttpPost, Route("{id}/asset")]
-        public async Task<ActionResult<Guid>> IssueAsset(Guid id, [FromBody] CreateAssetDto asset)
+        public async Task<ActionResult<Guid>> IssueAsset(Guid id, [FromBody] UpsertAssetDto asset)
         {
             var assetId = await _issuerRepository.IssueAsset(id, asset);
 
@@ -116,7 +115,7 @@ namespace StellarShowcase.API.Controllers
         /// <param name="assetId">Asset Id</param>
         /// <param name="tx">Transaction details</param>
         /// <returns></returns>
-        [HttpPut, Route("{id}/asset/{assetId}/transfer")]
+        [HttpPost, Route("{id}/asset/{assetId}/transfer")]
         public async Task<ActionResult<string>> TransferAsset(
             [FromRoute] Guid id,
             [FromRoute] Guid assetId,

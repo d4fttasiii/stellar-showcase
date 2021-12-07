@@ -1,27 +1,23 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-import { UserRoutingModule } from './user-routing.module';
+import { DexRoutingModule } from './dex-routing.module';
 import { ListComponent } from './list/list.component';
-import { CreateComponent } from './create/create.component';
 import { CoreModule } from '../core/core.module';
 import { SharedModule } from '../shared/shared.module';
-import { DetailsComponent } from './details/details.component';
-import { AddAssetComponent } from './add-asset/add-asset.component';
+import { CreateComponent } from './create/create.component';
 
 
 @NgModule({
   declarations: [
     ListComponent,
-    CreateComponent,
-    DetailsComponent,
-    AddAssetComponent
+    CreateComponent
   ],
   imports: [
     CommonModule,
     CoreModule,
     SharedModule,
-    UserRoutingModule,
+    DexRoutingModule
   ]
 })
-export class UserModule { }
+export class DexModule { }

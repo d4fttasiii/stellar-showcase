@@ -1,0 +1,15 @@
+<app-container title="Add Asset" icon="fa-plus-square" *ngIf="loaded">
+    <div>
+        <mat-form-field appearance="standard" class="w-mn30">
+            <mat-label>Choose asset</mat-label>
+            <mat-select name="assetId" required [(ngModel)]="selectedAsset">
+                <mat-option *ngFor="let asset of assets" [value]="asset">
+                    {{ asset.unitName }}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+    </div>
+    <div class="mg-y2">
+        <button type="button" color="primary" mat-raised-button (click)="submit()">Submit</button>
+    </div>
+</app-container>

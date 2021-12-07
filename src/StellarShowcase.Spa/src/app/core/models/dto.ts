@@ -3,6 +3,10 @@ export interface AccountDto {
     sequenceNumber: number;
     nativeBalance: number;
     nonNativeBalances: Balance[];
+    isAuthRequired: boolean;
+    isAuthRevocable: boolean;
+    isAuthImmutable: boolean;
+    isClawbackEnabled: boolean;
 }
 
 export interface Balance {
@@ -24,12 +28,20 @@ export interface UserAccountDto extends CreateUserAccountDto {
     account: AccountDto;
 }
 
-export interface CreateAssetDto {
+export interface UpsertAssetDto {
     unitName: string;
     totalSupply: number;
+    isAuthRequired: boolean;
+    isAuthRevocable: boolean;
+    isAuthImmutable: boolean;
+    isClawbackEnabled: boolean;
 }
 
-export interface AssetDto extends CreateAssetDto {
+export interface AssetDto {
+    id: string;
+    issuerId: string;
+    unitName: string;
+    totalSupply: number;
     issuerAccountId: string;
 }
 
@@ -40,4 +52,10 @@ export interface IssuerDto {
     issuer: AccountDto;
     distributor: AccountDto;
     assets: AssetDto[];
+}
+
+export interface IssuerTransferDto {
+    userAccountId: string;
+    amount: number;
+    memo: string;
 }

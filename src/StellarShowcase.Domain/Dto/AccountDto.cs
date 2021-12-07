@@ -8,6 +8,10 @@ namespace StellarShowcase.Domain.Dto
         public long SequenceNumber { get; set; }
         public decimal NativeBalance { get; set; }
         public List<Balance> NonNativeBalances { get; set; }
+        public bool IsAuthRequired { get; set; }
+        public bool IsAuthRevocable { get; set; }
+        public bool IsAuthImmutable { get; set; }
+        public bool IsClawbackEnabled { get; set; }
     }
 
     public class Balance
