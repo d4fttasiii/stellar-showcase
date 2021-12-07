@@ -1,1 +1,26 @@
-<p>create works!</p>
+<app-container title="Create market" icon="fa-money-check-alt" *ngIf="loaded">
+    <div>
+        <mat-form-field appearance="standard" class="w-mn30">
+            <mat-label>Choose base asset</mat-label>
+            <mat-select name="assetId" required [(ngModel)]="baseAsset">
+                <mat-option *ngFor="let asset of assets" [value]="asset">
+                    {{asset.unitName}}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+    </div>
+
+    <div>
+        <mat-form-field appearance="standard" class="w-mn30">
+            <mat-label>Choose quote asset</mat-label>
+            <mat-select name="assetId" required [(ngModel)]="quoteAsset">
+                <mat-option *ngFor="let asset of assets" [value]="asset">
+                    {{asset.unitName}}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+    </div>
+    <div class="mg-y2">
+        <button type="button" color="primary" mat-raised-button (click)="submit()">Submit</button>
+    </div>
+</app-container>

@@ -8,8 +8,7 @@ using System.Threading.Tasks;
 namespace StellarShowcase.API.Controllers
 {
     [Route("api/issuer")]
-    [ApiController]
-    public class IssuerController : ControllerBase
+    public class IssuerController : BaseController
     {
         private readonly IIssuerRepository _issuerRepository;
 
@@ -25,9 +24,7 @@ namespace StellarShowcase.API.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<IssuerDto>>> GetAll()
         {
-            var issuer = await _issuerRepository.GetIssuers();
-
-            return Ok(issuer);
+            return await HandleRequest(async () => await _issuerRepository.GetIssuers());
         }
 
         /// <summary>
@@ -38,9 +35,7 @@ namespace StellarShowcase.API.Controllers
         [HttpGet, Route("{id}")]
         public async Task<ActionResult<IssuerDto>> Get(Guid id)
         {
-            var issuer = await _issuerRepository.GetIssuer(id);
-
-            return Ok(issuer);
+            return await HandleRequest(async () => await _issuerRepository.GetIssuer(id));
         }
 
         /// <summary>
@@ -50,9 +45,7 @@ namespace StellarShowcase.API.Controllers
         [HttpPost]
         public async Task<ActionResult<Guid>> Create()
         {
-            var id = await _issuerRepository.AddIssuer();
-
-            return Ok(id);
+            return await HandleRequest(async () => await _issuerRepository.AddIssuer());
         }
 
         /// <summary>
@@ -64,9 +57,7 @@ namespace StellarShowcase.API.Controllers
         [HttpPost, Route("{id}/asset")]
         public async Task<ActionResult<Guid>> IssueAsset(Guid id, [FromBody] UpsertAssetDto asset)
         {
-            var assetId = await _issuerRepository.IssueAsset(id, asset);
-
-            return Ok(assetId);
+            return await HandleRequest(async () => await _issuerRepository.IssueAsset(id, asset));
         }
 
         /// <summary>
@@ -83,9 +74,7 @@ namespace StellarShowcase.API.Controllers
             [FromRoute] Guid assetId,
             [FromRoute] Guid userAccountId)
         {
-            await _issuerRepository.AuthorizeTrustline(id, assetId, userAccountId);
-
-            return Ok();
+            return await HandleRequest(async () => await _issuerRepository.AuthorizeTrustline(id, assetId, userAccountId));
         }
 
         /// <summary>
@@ -103,9 +92,7 @@ namespace StellarShowcase.API.Controllers
             [FromRoute] Guid assetId,
             [FromRoute] Guid userAccountId)
         {
-            await _issuerRepository.RevokeTrustline(id, assetId, userAccountId);
-
-            return Ok();
+            return await HandleRequest(async () => await _issuerRepository.RevokeTrustline(id, assetId, userAccountId));
         }
 
         /// <summary>
@@ -121,9 +108,7 @@ namespace StellarShowcase.API.Controllers
             [FromRoute] Guid assetId,
             [FromBody] IssuerTransferDto tx)
         {
-            var txId = await _issuerRepository.TransferAsset(id, assetId, tx);
-
-            return Ok(txId);
+            return await HandleRequest(async () => await _issuerRepository.TransferAsset(id, assetId, tx));
         }
     }
 }

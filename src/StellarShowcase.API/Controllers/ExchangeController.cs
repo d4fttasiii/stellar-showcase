@@ -8,8 +8,7 @@ using System.Threading.Tasks;
 namespace StellarShowcase.API.Controllers
 {
     [Route("api/exchange")]
-    [ApiController]
-    public class ExchangeController : ControllerBase
+    public class ExchangeController : BaseController
     {
         private readonly IExchangeRepository _exchangeRepository;
 
@@ -21,25 +20,19 @@ namespace StellarShowcase.API.Controllers
         [HttpGet, Route("markets")]
         public async Task<ActionResult<List<MarketDto>>> GetMarkets()
         {
-            var markets = await _exchangeRepository.GetMarkets();
-
-            return Ok(markets);
+            return await HandleRequest(async () => await _exchangeRepository.GetMarkets());
         }
 
         [HttpPost, Route("markets")]
         public async Task<ActionResult<Guid>> CreateMarket([FromBody] CreateMarketDto data)
         {
-            var marketId = await _exchangeRepository.CreateMarket(data.BaseAssetId, data.QuoteAssetId, data.Name);
-
-            return Ok(marketId);
+            return await HandleRequest(async () => await _exchangeRepository.CreateMarket(data.BaseAssetId, data.QuoteAssetId, data.Name));
         }
 
         [HttpGet, Route("markets/{id}")]
-        public async Task<ActionResult<List<MarketDto>>> GetMarket([FromRoute] Guid id)
+        public async Task<ActionResult<MarketDto>> GetMarket([FromRoute] Guid id)
         {
-            var market = await _exchangeRepository.GetMarket(id);
-
-            return Ok(market);
+            return await HandleRequest(async () => await _exchangeRepository.GetMarket(id));
         }
     }
 }

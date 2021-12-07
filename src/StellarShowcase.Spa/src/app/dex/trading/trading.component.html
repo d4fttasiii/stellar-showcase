@@ -1,0 +1,21 @@
+<app-container title="Trading" icon="fa-exchange-alt" *ngIf="loaded">
+    <div class="w-100 mg-b5">
+        <button mat-raised-button color="accent" [matMenuTriggerFor]="menu">Impersonate</button>
+        <mat-menu #menu="matMenu">
+            <button mat-menu-item *ngFor="let user of userAccounts" (click)="impersonate(user)">{{ user.fullName }}</button>
+        </mat-menu>
+
+        <span class="mg-x3" *ngIf="impersonatedUserAccount">Trading as {{ impersonatedUserAccount.fullName }}</span>
+
+        <!-- <mat-chip-list #chipList aria-label="Fruit selection">
+            <mat-chip *ngIf="impersonatedUserAccount" [selectable]="selectable"
+                     [removable]="removable" (removed)="remove(fruit)">
+                     {{ impersonatedUserAccount.fullName }}
+              <button matChipRemove>
+                <mat-icon>cancel</mat-icon>
+              </button>
+            </mat-chip>
+          </mat-chip-list> -->
+    </div>
+    <hr />
+</app-container>

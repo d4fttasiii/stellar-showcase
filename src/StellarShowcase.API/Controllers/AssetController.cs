@@ -7,8 +7,7 @@ using System.Threading.Tasks;
 namespace StellarShowcase.API.Controllers
 {
     [Route("api/asset")]
-    [ApiController]
-    public class AssetController : ControllerBase
+    public class AssetController : BaseController
     {
         private readonly IAssetRepository _assetRepository;
 
@@ -20,9 +19,7 @@ namespace StellarShowcase.API.Controllers
         [HttpGet]
         public async Task<ActionResult<List<AssetDto>>> GetAssets()
         {
-            var assets = await _assetRepository.GetAll();
-
-            return Ok(assets);
+            return await HandleRequest(async () => await _assetRepository.GetAll());
         }
     }
 }

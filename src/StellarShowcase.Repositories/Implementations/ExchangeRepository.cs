@@ -66,8 +66,12 @@ namespace StellarShowcase.Repositories.Implementations
 
         public async Task<Guid> CreateMarket(Guid baseAssetId, Guid quoteAssetId, string name)
         {
-            if (await _dbContext.Market.AnyAsync(m => m.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase) ||
-                (m.BaseAssetId == baseAssetId && m.QuoteAssetId == quoteAssetId)))
+            if (baseAssetId == quoteAssetId)
+                throw new ArgumentNullException("Same assets selected!");
+
+            if (await _dbContext.Market.AnyAsync(m => m.Name == name ||
+                (m.BaseAssetId == baseAssetId && m.QuoteAssetId == quoteAssetId) ||
+                (m.BaseAssetId == quoteAssetId&& m.QuoteAssetId == baseAssetId)))
             {
                 throw new ArgumentException($"Market {name} already exists");
             }

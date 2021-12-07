@@ -30,6 +30,11 @@ export class AppComponent implements OnInit {
         label: 'Issuing',
         route: 'issuing',
       },
+      {
+        icon: 'fa-exchange-alt',
+        label: 'Dex',
+        route: 'dex',
+      },
     ];
   }
 

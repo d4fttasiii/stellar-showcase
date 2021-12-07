@@ -6,12 +6,14 @@ import { ListComponent } from './list/list.component';
 import { CoreModule } from '../core/core.module';
 import { SharedModule } from '../shared/shared.module';
 import { CreateComponent } from './create/create.component';
+import { TradingComponent } from './trading/trading.component';
 
 
 @NgModule({
   declarations: [
     ListComponent,
-    CreateComponent
+    CreateComponent,
+    TradingComponent
   ],
   imports: [
     CommonModule,

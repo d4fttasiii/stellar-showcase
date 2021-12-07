@@ -59,3 +59,29 @@ export interface IssuerTransferDto {
     amount: number;
     memo: string;
 }
+
+export interface OrderBookDto {
+    buys: Buy[];
+    sells: Sell[];
+}
+
+export interface Buy {
+    volume: number;
+    price: number;
+}
+
+export interface Sell extends Buy {}
+
+export interface CreateMarketDto {
+    name: string;
+    baseAssetId: string;
+    quoteAssetId: string;
+}
+
+export interface MarketDto {
+    id: string;
+    name: string;
+    base: AssetDto;
+    quote: AssetDto;
+    orderBooks: OrderBookDto;
+}
