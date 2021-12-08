@@ -1,8 +1,8 @@
 <div class="mg-t10">
     <mat-card class="mg-0 pd-0">
         <mat-toolbar>
-            <span class="mg-r2" *ngIf="icon">
-                <mat-icon fontSet="fa" [fontIcon]="icon"></mat-icon>
+            <span class="icon mg-r2" *ngIf="icon">
+                <i class="fa fa-fw" [ngClass]="icon"></i>
             </span>
             <span>{{ title }}</span>
             <span class="title-spacer"></span>
