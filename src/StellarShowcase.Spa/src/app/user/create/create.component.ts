@@ -12,6 +12,7 @@ import { UserAccountService } from '../../core/services/user-account.service';
 export class CreateComponent implements OnInit {
 
   model: CreateUserAccountDto;
+  isLoading = true;
 
   constructor(
     private userAccountService: UserAccountService, 
@@ -24,6 +25,7 @@ export class CreateComponent implements OnInit {
       email: '',
       phone: ''
     };
+    setTimeout(() => this.isLoading = false, 600);
   }
 
   submit() {

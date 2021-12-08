@@ -1,4 +1,4 @@
-<app-container title="Markets" icon="fa-exchange-alt">
+<app-container title="Markets" icon="fa-exchange-alt" [isLoading]="isLoading">
     <div class="w-100 mg-b5">
         <button type="button" mat-raised-button color="accent" (click)="goToCreateMarket()">
             New market

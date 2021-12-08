@@ -13,17 +13,20 @@ export class ListComponent implements OnInit {
 
   columns = ['fullName', 'fullAddress', 'email', 'phone', 'action']
   userAccounts: UserAccountDto[];
+  isLoading = true;
 
   constructor(
     private userAccountService: UserAccountService,
     private router: Router) { }
 
   ngOnInit(): void {
+    this.isLoading = true;
     this.userAccountService
       .getAll()
-      .subscribe(
-        result => this.userAccounts = result,
-      );
+      .subscribe({
+        next: result => this.userAccounts = result,
+        complete: () => setTimeout(() => this.isLoading = false, 600),
+      });
   }
 
   goToDetail(id: string) {

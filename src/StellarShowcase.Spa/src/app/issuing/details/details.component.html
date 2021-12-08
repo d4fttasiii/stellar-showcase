@@ -1,7 +1,9 @@
-<app-container *ngIf="issuer" icon="fa-building" title="Issuer details" backUrl="/issuing">
-    <div class="mg-b5 w-100">        
-        <button class="mg-r2" type="button" mat-raised-button color="accent" (click)="goToCreateToken()">Create asset</button>
-        <button class="mg-r2" type="button" mat-raised-button color="accent" (click)="goToTransfer()">Transfer asset</button>
+<app-container *ngIf="issuer" icon="fa-building" title="Issuer details" backUrl="/issuing" [isLoading]="isLoading">
+    <div class="mg-b5 w-100">
+        <button class="mg-r2" type="button" mat-raised-button color="accent" (click)="goToCreateToken()">Create
+            asset</button>
+        <button class="mg-r2" type="button" mat-raised-button color="accent" (click)="goToTransfer()">Transfer
+            asset</button>
     </div>
     <hr />
     <pre>{{issuer | json}}</pre>

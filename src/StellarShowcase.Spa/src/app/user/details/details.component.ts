@@ -12,6 +12,7 @@ import { UserAccountService } from '../../core/services/user-account.service';
 export class DetailsComponent implements OnInit {
 
   userAccount: UserAccountDto;
+  isLoading = true;
 
   constructor(
     private userAccountService: UserAccountService,
@@ -20,14 +21,21 @@ export class DetailsComponent implements OnInit {
 
   ngOnInit(): void {
     this.activatedRoute.params.subscribe(
-      params => this.userAccountService
-        .get(params['id'])
-        .subscribe(result => this.userAccount = result),
+      params => this.loadData(params['id']),
     );
   }
 
-  goToAddAsset(){
+  goToAddAsset() {
     this.router.navigate(['user', this.userAccount.id, 'add-asset']);
   }
 
+  private loadData(id: string) {
+    this.isLoading = true;
+    this.userAccountService
+      .get(id)
+      .subscribe({
+        next: result => this.userAccount = result,
+        complete: () => setTimeout(() => this.isLoading = false, 600),
+      });
+  }
 }

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { forkJoin } from 'rxjs';
 
 import { ActiveOrderDto, CreateBuyOrderDto, CreateSellOrderDto, MarketDto, UserAccountDto } from '../../core/models/dto';
@@ -14,7 +14,7 @@ import { UserAccountService } from '../../core/services/user-account.service';
 })
 export class TradingComponent implements OnInit {
 
-  loaded = false;
+  isLoading = true;
   market: MarketDto;
   userAccounts: UserAccountDto[];
   impersonatedUserAccount: UserAccountDto;
@@ -24,14 +24,12 @@ export class TradingComponent implements OnInit {
 
   chartOptions: any;
   orderColumns = ['id', 'buying', 'selling', 'volume', 'price', 'total', 'action'];
-  orderbookColumns = ['volume', 'price', 'total'];
 
   constructor(
     private userAccountService: UserAccountService,
     private dexService: DexService,
     private activatedRoute: ActivatedRoute,
-    private snackBar: MatSnackBar,
-    private router: Router) { }
+    private snackBar: MatSnackBar) { }
 
   ngOnInit(): void {
     this.activatedRoute.params.subscribe(
@@ -109,15 +107,18 @@ export class TradingComponent implements OnInit {
       this.dexService.get(id),
       this.userAccountService.getAll()]);
 
-    q.subscribe(results => {
-      this.market = results[0];
-      this.userAccounts = results[1];
-      this.rebuildChartData();
-      this.loaded = true;
+    q.subscribe({
+      next: results => {
+        this.market = results[0];
+        this.userAccounts = results[1];
+        this.rebuildChartData();
+      },
+      complete: () => setTimeout(() => this.isLoading = false, 600),
     });
   }
 
   private reloadActiveOrders(id: string) {
+    this.userAccountActiveOrders = [];
     this.userAccountService
       .getActiverOrders(id)
       .subscribe(

@@ -14,6 +14,7 @@ export class CreateAssetComponent implements OnInit {
 
   issuerId: string;
   model: UpsertAssetDto;
+  isLoading = true;
 
   constructor(
     private issuerService: IssuerService,
@@ -33,6 +34,7 @@ export class CreateAssetComponent implements OnInit {
         isClawbackEnabled: false,
       };
     });
+    setTimeout(() => this.isLoading = false, 600);
   }
 
   submit() {

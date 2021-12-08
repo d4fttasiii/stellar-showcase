@@ -16,6 +16,7 @@ interface IssuerDtoEx extends IssuerDto {
 })
 export class OverviewComponent implements OnInit {
 
+  isLoading = true;
   issuers: IssuerDtoEx[];
   columns = ['nr', 'issuerAccountId', 'distributorAccountId', 'action'];
 
@@ -40,21 +41,25 @@ export class OverviewComponent implements OnInit {
     });
   }
 
-  goToDetails(id: string){
+  goToDetails(id: string) {
     this.router.navigate(['issuing', id]);
   }
 
   private loadData(): void {
+    this.isLoading = true;
     this.issuerService
       .getAll()
-      .subscribe(result => {
-        this.issuers = [];
-        let cnt = 0;
-        result.forEach(i => {
-          const issuer = i as IssuerDtoEx;
-          issuer.nr = ++cnt;
-          this.issuers.push(issuer);
-        });
+      .subscribe({
+        next: result => {
+          this.issuers = [];
+          let cnt = 0;
+          result.forEach(i => {
+            const issuer = i as IssuerDtoEx;
+            issuer.nr = ++cnt;
+            this.issuers.push(issuer);
+          });
+        },
+        complete: () => setTimeout(() => this.isLoading = false, 600),
       });
   }
 

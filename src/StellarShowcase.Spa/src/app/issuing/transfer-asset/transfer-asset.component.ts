@@ -1,11 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { forkJoin } from 'rxjs';
-import { UserAccountService } from 'src/app/core/services/user-account.service';
 
 import { IssuerDto, IssuerTransferDto, UserAccountDto } from '../../core/models/dto';
 import { IssuerService } from '../../core/services/issuer.service';
+import { UserAccountService } from '../../core/services/user-account.service';
 
 @Component({
   selector: 'app-transfer-asset',
@@ -18,23 +18,22 @@ export class TransferAssetComponent implements OnInit {
   issuer: IssuerDto;
   userAccounts: UserAccountDto[];
   model: IssuerTransferDto;
-  loaded = false;
+  isLoading = true;
 
   constructor(
     private issuerService: IssuerService,
     private userAccountService: UserAccountService,
     private activatedRoute: ActivatedRoute,
-    private snackBar: MatSnackBar,
-    private router: Router) { }
+    private snackBar: MatSnackBar) { }
 
   ngOnInit(): void {
+    this.model = {
+      amount: 0,
+      memo: '',
+      userAccountId: '',
+    };
     this.activatedRoute.params
       .subscribe(params => {
-        this.model = {
-          amount: 0,
-          memo: '',
-          userAccountId: '',
-        };
         this.loadData(params['id']);
       });
   }
@@ -53,14 +52,17 @@ export class TransferAssetComponent implements OnInit {
   }
 
   private loadData(id: string) {
+    this.isLoading = true;
     const q = forkJoin([
       this.issuerService.get(id),
       this.userAccountService.getAll()]);
 
-    q.subscribe(results => {
-      this.issuer = results[0];
-      this.userAccounts = results[1];
-      this.loaded = true;
+    q.subscribe({
+      next: results => {
+        this.issuer = results[0];
+        this.userAccounts = results[1];
+      },
+      complete: () => setTimeout(() => this.isLoading = false, 600),
     });
   }
 

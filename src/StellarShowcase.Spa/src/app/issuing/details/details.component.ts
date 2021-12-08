@@ -12,6 +12,7 @@ import { IssuerService } from '../../core/services/issuer.service';
 export class DetailsComponent implements OnInit {
 
   issuer: IssuerDto;
+  isLoading = true;
 
   constructor(
     private issuerService: IssuerService,
@@ -33,10 +34,14 @@ export class DetailsComponent implements OnInit {
   }
 
   private loadData(id: string): void {
+    this.isLoading = true;
     this.issuerService
       .get(id)
-      .subscribe(result => {
-        this.issuer = result;
+      .subscribe({
+        next: result => {
+          this.issuer = result;
+        },
+        complete: () => setTimeout(() => this.isLoading = false, 600),
       });
   }
 

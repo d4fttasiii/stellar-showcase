@@ -15,7 +15,7 @@ export class CreateComponent implements OnInit {
   assets: AssetDto[];
   baseAsset: AssetDto;
   quoteAsset: AssetDto;
-  loaded = false;
+  isLoading = true;
 
   constructor(
     private assetService: AssetService,
@@ -45,11 +45,15 @@ export class CreateComponent implements OnInit {
   }
 
   private loadData() {
+    this.isLoading = true;
     this.assetService
       .getAll()
-      .subscribe(assets => {
-        this.assets = assets;
-        this.loaded = true;
+      .subscribe({
+        next: assets => {
+          this.assets = assets;
+        },
+        complete: () => setTimeout(() =>
+          this.isLoading = false, 600),
       });
   }
 

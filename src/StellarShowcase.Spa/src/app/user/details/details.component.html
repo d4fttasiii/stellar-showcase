@@ -1,4 +1,4 @@
-<app-container *ngIf="userAccount" icon="fa-address-card" [title]="userAccount.fullName" backUrl="/user">
+<app-container icon="fa-address-card" title="User: {{ userAccount.fullName }}" backUrl="/user" [isLoading]="isLoading">
     <div class="w-100 mg-b5">
         <button type="button" mat-raised-button color="accent" (click)="goToAddAsset()">Add asset</button>
     </div>

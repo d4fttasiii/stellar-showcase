@@ -9,6 +9,7 @@ import { Router } from '@angular/router';
 export class ContainerComponent {
 
   @Input() title: string;
+  @Input() isLoading?: boolean;
   @Input() backUrl?: string;
   @Input() icon?: string;
 

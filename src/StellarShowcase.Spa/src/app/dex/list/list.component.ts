@@ -17,6 +17,7 @@ export class ListComponent implements OnInit {
 
   markets: MarketDtoEx[];
   columns = ['nr', 'name', 'price', 'action'];
+  isLoading = true;
 
   constructor(
     private dexService: DexService,
@@ -30,21 +31,25 @@ export class ListComponent implements OnInit {
     this.router.navigate(['dex', 'create-market']);
   }
 
-  goToTrading(id: string){
+  goToTrading(id: string) {
     this.router.navigate(['dex', id, 'trading']);
   }
 
   private loadData() {
+    this.isLoading = true;
     this.dexService
       .getAll()
-      .subscribe((markets) => {
-        this.markets = [];
-        let counter = 0;
-        markets.forEach(m => {
-          const market = m as MarketDtoEx;
-          market.nr = ++counter;
-          this.markets.push(market);
-        });
+      .subscribe({
+        next: (markets) => {
+          this.markets = [];
+          let counter = 0;
+          markets.forEach(m => {
+            const market = m as MarketDtoEx;
+            market.nr = ++counter;
+            this.markets.push(market);
+          });
+        },
+        complete: () => setTimeout(() => this.isLoading = false, 600),
       });
   }
 

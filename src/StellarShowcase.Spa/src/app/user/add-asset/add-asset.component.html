@@ -1,4 +1,4 @@
-<app-container title="Add Asset" icon="fa-plus-square" *ngIf="loaded" backUrl="/user/{{id}}/details">
+<app-container title="Add Asset" icon="fa-plus-square" [isLoading]="isLoading" backUrl="/user/{{id}}/details">
     <div>
         <mat-form-field appearance="standard" class="w-mn30">
             <mat-label>Choose asset</mat-label>

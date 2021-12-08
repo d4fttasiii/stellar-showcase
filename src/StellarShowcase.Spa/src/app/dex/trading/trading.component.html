@@ -1,4 +1,4 @@
-<app-container title="Trading: {{ market.name }}" icon="fa-exchange-alt" backUrl="/dex" *ngIf="loaded">
+<app-container title="Trading: {{ market.name }}" icon="fa-exchange-alt" backUrl="/dex" [isLoading]="isLoading">
     <div class="pd-5">
         <mat-tab-group (selectedIndexChange)="toggle($event)">
             <mat-tab label="Buy order">
@@ -24,6 +24,52 @@
                     <button type="button" [color]="isBuy ? 'accent' : 'warn'" [disabled]="!impersonatedUserAccount"
                         mat-raised-button (click)="submit()">Submit</button>
                 </div>
+                <div class="mg-t3" *ngIf="userAccountActiveOrders && userAccountActiveOrders.length > 0">
+                    <table mat-table [dataSource]="userAccountActiveOrders" class="w-100">
+
+                        <ng-container matColumnDef="id">
+                            <th mat-header-cell *matHeaderCellDef> Id </th>
+                            <td mat-cell *matCellDef="let element"> {{element.id}} </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="buying">
+                            <th mat-header-cell *matHeaderCellDef> Buying </th>
+                            <td mat-cell *matCellDef="let element"> {{element.buying.unitName}} </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="selling">
+                            <th mat-header-cell *matHeaderCellDef> Selling </th>
+                            <td mat-cell *matCellDef="let element"> {{element.selling.unitName}} </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="volume">
+                            <th mat-header-cell *matHeaderCellDef> Volume </th>
+                            <td mat-cell *matCellDef="let element"> {{element.volume}} </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="price">
+                            <th mat-header-cell *matHeaderCellDef> Price </th>
+                            <td mat-cell *matCellDef="let element"> {{element.price}} </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="total">
+                            <th mat-header-cell *matHeaderCellDef> Total </th>
+                            <td mat-cell *matCellDef="let element"> {{element.price * element.volume}}
+                                {{element.buying.unitName}}</td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="action">
+                            <th mat-header-cell *matHeaderCellDef> </th>
+                            <td mat-cell *matCellDef="let element" class="ta-r">
+                                <button type="button" mat-raised-button color="warn"
+                                    (click)="cancelOrder(element.id)">Cancel</button>
+                            </td>
+                        </ng-container>
+
+                        <tr mat-header-row *matHeaderRowDef="orderColumns"></tr>
+                        <tr mat-row *matRowDef="let row; columns: orderColumns;"></tr>
+                    </table>
+                </div>
             </mat-tab>
             <mat-tab label="Sell order">
                 <div>
@@ -48,56 +94,54 @@
                     <button type="button" [color]="isBuy ? 'accent' : 'warn'" [disabled]="!impersonatedUserAccount"
                         mat-raised-button (click)="submit()">Submit</button>
                 </div>
+                <div class="mg-t3" *ngIf="userAccountActiveOrders && userAccountActiveOrders.length > 0">
+                    <table mat-table [dataSource]="userAccountActiveOrders" class="w-100">
+
+                        <ng-container matColumnDef="id">
+                            <th mat-header-cell *matHeaderCellDef> Id </th>
+                            <td mat-cell *matCellDef="let element"> {{element.id}} </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="buying">
+                            <th mat-header-cell *matHeaderCellDef> Buying </th>
+                            <td mat-cell *matCellDef="let element"> {{element.buying.unitName}} </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="selling">
+                            <th mat-header-cell *matHeaderCellDef> Selling </th>
+                            <td mat-cell *matCellDef="let element"> {{element.selling.unitName}} </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="volume">
+                            <th mat-header-cell *matHeaderCellDef> Volume </th>
+                            <td mat-cell *matCellDef="let element"> {{element.volume}} </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="price">
+                            <th mat-header-cell *matHeaderCellDef> Price </th>
+                            <td mat-cell *matCellDef="let element"> {{element.price}} </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="total">
+                            <th mat-header-cell *matHeaderCellDef> Total </th>
+                            <td mat-cell *matCellDef="let element"> {{element.price * element.volume}}
+                                {{element.buying.unitName}}</td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="action">
+                            <th mat-header-cell *matHeaderCellDef> </th>
+                            <td mat-cell *matCellDef="let element" class="ta-r">
+                                <button type="button" mat-raised-button color="warn"
+                                    (click)="cancelOrder(element.id)">Cancel</button>
+                            </td>
+                        </ng-container>
+
+                        <tr mat-header-row *matHeaderRowDef="orderColumns"></tr>
+                        <tr mat-row *matRowDef="let row; columns: orderColumns;"></tr>
+                    </table>
+                </div>
             </mat-tab>
             <mat-tab label="Order book">
-                <!-- <div class="flx">
-                    <div class="w-50">
-                        <h3>Buy Orders</h3>
-                        <table mat-table [dataSource]="market.orderBooks.buys" class="w-100 pd-x2">
-
-                            <ng-container matColumnDef="volume">
-                                <th mat-header-cell *matHeaderCellDef> Volume </th>
-                                <td mat-cell *matCellDef="let element"> {{element.volume}} </td>
-                            </ng-container>
-
-                            <ng-container matColumnDef="price">
-                                <th mat-header-cell *matHeaderCellDef> Price </th>
-                                <td mat-cell *matCellDef="let element"> {{element.price}} </td>
-                            </ng-container>
-
-                            <ng-container matColumnDef="total">
-                                <th mat-header-cell *matHeaderCellDef> Total </th>
-                                <td mat-cell *matCellDef="let element"> {{element.price * element.volume}}</td>
-                            </ng-container>
-
-                            <tr mat-header-row *matHeaderRowDef="orderbookColumns"></tr>
-                            <tr mat-row *matRowDef="let row; columns: orderbookColumns;"></tr>
-                        </table>
-                    </div>
-                    <div class="w-50">
-                        <h3>Sell Orders</h3>
-                        <table mat-table [dataSource]="market.orderBooks.sells" class="w-100 pd-x2">
-
-                            <ng-container matColumnDef="volume">
-                                <th mat-header-cell *matHeaderCellDef> Volume </th>
-                                <td mat-cell *matCellDef="let element"> {{element.volume}} </td>
-                            </ng-container>
-
-                            <ng-container matColumnDef="price">
-                                <th mat-header-cell *matHeaderCellDef> Price </th>
-                                <td mat-cell *matCellDef="let element"> {{element.price}} </td>
-                            </ng-container>
-
-                            <ng-container matColumnDef="total">
-                                <th mat-header-cell *matHeaderCellDef> Total </th>
-                                <td mat-cell *matCellDef="let element"> {{element.price * element.volume}}</td>
-                            </ng-container>
-
-                            <tr mat-header-row *matHeaderRowDef="orderbookColumns"></tr>
-                            <tr mat-row *matRowDef="let row; columns: orderbookColumns;"></tr>
-                        </table>
-                    </div>
-                </div> -->
                 <div echarts [options]="chartOptions"></div>
             </mat-tab>
         </mat-tab-group>
