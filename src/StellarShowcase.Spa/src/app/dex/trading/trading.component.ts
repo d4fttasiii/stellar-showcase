@@ -19,6 +19,7 @@ export class TradingComponent implements OnInit {
   impersonatedUserAccount: UserAccountDto;
   model: CreateSellOrderDto | CreateBuyOrderDto;
   isBuy: boolean;
+  chartOptions: any;
   loaded = false;
 
   constructor(
@@ -33,8 +34,8 @@ export class TradingComponent implements OnInit {
       (params) => {
         this.model = {
           marketId: params['id'],
-          price: 0,
-          volume: 0,
+          price: null,
+          volume: null,
         };
         this.loadData(params['id']);
       },
@@ -57,25 +58,31 @@ export class TradingComponent implements OnInit {
     if (this.isBuy) {
       this.userAccountService
         .createBuyOrder(this.impersonatedUserAccount.id, this.model)
-        .subscribe(() => {
-          this.snackBar.open(`Buy order created: ${this.model.volume} for ${this.model.price}!`, 'OK', {
-            duration: 5000,
-            horizontalPosition: 'center',
-            verticalPosition: 'bottom',
-            politeness: 'polite',
-          });
+        .subscribe({
+          next: () => {
+            this.snackBar.open(`Buy order created: ${this.model.volume} for ${this.model.price}!`, 'OK', {
+              duration: 5000,
+              horizontalPosition: 'center',
+              verticalPosition: 'bottom',
+              politeness: 'polite',
+            });
+          },
+          complete: () => this.reloadMarketData(),
         });
     }
     else {
       this.userAccountService
         .createSellOrder(this.impersonatedUserAccount.id, this.model)
-        .subscribe(() => {
-          this.snackBar.open(`Sell order created: ${this.model.volume} for ${this.model.price}!`, 'OK', {
-            duration: 5000,
-            horizontalPosition: 'center',
-            verticalPosition: 'bottom',
-            politeness: 'polite',
-          });
+        .subscribe({
+          next: () => {
+            this.snackBar.open(`Sell order created: ${this.model.volume} for ${this.model.price}!`, 'OK', {
+              duration: 5000,
+              horizontalPosition: 'center',
+              verticalPosition: 'bottom',
+              politeness: 'polite',
+            });
+          },
+          complete: () => this.reloadMarketData()
         });
     }
   }
@@ -88,7 +95,65 @@ export class TradingComponent implements OnInit {
     q.subscribe(results => {
       this.market = results[0];
       this.userAccounts = results[1];
+      this.rebuildChartData();
       this.loaded = true;
     });
+  }
+
+  private reloadMarketData() {
+    this.dexService
+      .get(this.market.id)
+      .subscribe(market => {
+        this.market = market;
+        this.rebuildChartData();
+      })
+  }
+
+  private rebuildChartData() {
+    const xAxisData = [];
+    const yAxisDataBuy = [];
+    const yAxisDataSell = [];
+
+    this.market.orderBooks.buys.forEach(b => {
+      xAxisData.push(b.price);
+      yAxisDataBuy.push(b.volume);
+      yAxisDataSell.push(null);
+    });
+
+    this.market.orderBooks.sells.forEach(s => {
+      xAxisData.push(s.price);
+      yAxisDataSell.push(s.volume);
+    });
+
+    this.chartOptions = {
+      legend: {
+        data: ['Buy', 'Sell'],
+        // align: 'top',
+      },
+      tooltip: {},
+      xAxis: {
+        data: xAxisData,
+        silent: false,
+        splitLine: {
+          show: false,
+        },
+      },
+      yAxis: {},
+      series: [
+        {
+          name: 'Buy Volume',
+          type: 'bar',
+          data: yAxisDataBuy,
+          animationDelay: (idx) => idx * 10,
+        }, {
+          name: 'Sell Volume',
+          type: 'bar',
+          data: yAxisDataSell,
+          animationDelay: (idx) => idx * 10,
+        },
+      ],
+      animationEasing: 'elasticOut',
+      animationDelayUpdate: (idx) => idx * 5,
+    };
   }
 }

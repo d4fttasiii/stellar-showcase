@@ -1,36 +1,14 @@
 <app-container title="Trading: {{ market.name }}" icon="fa-exchange-alt" *ngIf="loaded">
-    <div class="w-100 mg-b5 flx">
-        <div class="mg-r3"><button mat-raised-button color="accent" [matMenuTriggerFor]="menu">Impersonate</button>
-            <mat-menu #menu="matMenu">
-                <button mat-menu-item *ngFor="let user of userAccounts" (click)="impersonate(user)">{{ user.fullName
-                    }}</button>
-            </mat-menu>
-        </div>
-        <div>
-            <mat-chip-list #chipList>
-                <mat-chip color="primary" [selected]="true" *ngIf="impersonatedUserAccount"
-                    (removed)="stopImpersonating()">
-                    {{ impersonatedUserAccount.fullName }}
-                    <button matChipRemove>
-                        <mat-icon>cancel</mat-icon>
-                    </button>
-                </mat-chip>
-            </mat-chip-list>
-        </div>
-    </div>
-    <hr />
     <div class="w-100 mg-5 flx">
-        <div class="w-100 pd-5">
-            <div class="mg-b3">
-                <button type="button" mat-raised-button [color]="isBuy ? 'accent' : 'warn'" (click)="toggle()">
-                    <span *ngIf="isBuy">
-                        Buy
-                    </span>
-                    <span *ngIf="!isBuy">
-                        Sell
-                    </span>
-                </button>
-                <span></span>
+        <div class="w-50 pd-5">
+            <div>
+                <mat-form-field appearance="standard" class="w-mn30">
+                    <mat-select name="impersonate" placeholder="Impersonate" required [(ngModel)]="impersonatedUserAccount">
+                        <mat-option *ngFor="let userAccount of userAccounts" [value]="userAccount">
+                            {{userAccount.fullName}}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
             </div>
             <div>
                 <mat-form-field appearance="standard" class="w-mn30">
@@ -46,11 +24,20 @@
                 </mat-form-field>
             </div>
             <div class="mg-y2">
-                <button type="button" color="primary" [disabled]="!impersonatedUserAccount" mat-raised-button (click)="submit()">Submit</button>
+                <button type="button" class="mg-r2" mat-raised-button [color]="isBuy ? 'accent' : 'warn'" (click)="toggle()">
+                    <span *ngIf="isBuy">
+                        Buy
+                    </span>
+                    <span *ngIf="!isBuy">
+                        Sell
+                    </span>
+                </button>
+                <button type="button" color="primary" [disabled]="!impersonatedUserAccount" mat-raised-button
+                    (click)="submit()">Submit</button>
             </div>
         </div>
-        <div class="w-100 pd-5">
-            <pre>{{ market.orderBooks | json }}</pre>
+        <div class="w-50 pd-5">
+            <div echarts [options]="chartOptions"></div>
         </div>
     </div>
 </app-container>

@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { NgxEchartsModule } from 'ngx-echarts';
 
 import { DexRoutingModule } from './dex-routing.module';
 import { ListComponent } from './list/list.component';
@@ -19,7 +20,10 @@ import { TradingComponent } from './trading/trading.component';
     CommonModule,
     CoreModule,
     SharedModule,
-    DexRoutingModule
+    DexRoutingModule,
+    NgxEchartsModule.forRoot({
+      echarts: () => import('echarts')
+    })
   ]
 })
 export class DexModule { }

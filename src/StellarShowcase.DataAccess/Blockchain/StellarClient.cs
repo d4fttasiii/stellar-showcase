@@ -316,7 +316,7 @@ namespace StellarShowcase.DataAccess.Blockchain
                     Volume = decimal.Parse(a.Amount, NumberStyles.Float, CultureInfo.InvariantCulture),
                     Price = decimal.Parse(a.Price, NumberStyles.Float, CultureInfo.InvariantCulture),
                 })
-                .OrderByDescending(s => s.Price),
+                .OrderBy(s => s.Price),
                 Buys = orderbook.Bids.Select(b => new Buy
                 {
                     Volume = decimal.Parse(b.Amount, NumberStyles.Float, CultureInfo.InvariantCulture) / decimal.Parse(b.Price, NumberStyles.Float, CultureInfo.InvariantCulture),
