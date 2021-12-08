@@ -3,6 +3,7 @@ using stellar_dotnet_sdk;
 using StellarShowcase.Domain;
 using StellarShowcase.Domain.Dto;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
@@ -88,12 +89,12 @@ namespace StellarShowcase.DataAccess.Blockchain
             using var server = GetServer();
             var issuerAccount = await server.Accounts.Account(issuerAccountId);
 
-            if (config.IsAuthRequired == issuerAccount.Flags.AuthRequired && 
-                config.IsAuthRevocable  == issuerAccount.Flags.AuthRevocable &&
+            if (config.IsAuthRequired == issuerAccount.Flags.AuthRequired &&
+                config.IsAuthRevocable == issuerAccount.Flags.AuthRevocable &&
                 config.IsAuthImmutable == issuerAccount.Flags.AuthImmutable &&
                 config.IsClawbackEnabled == issuerAccount.Flags.AuthClawback)
                 return string.Empty;
-            
+
             var flags =
                 (config.IsAuthRequired ? (uint)stellar_dotnet_sdk.xdr.AccountFlags.AccountFlagsEnum.AUTH_REQUIRED_FLAG : 0) +
                 (config.IsAuthRevocable ? (uint)stellar_dotnet_sdk.xdr.AccountFlags.AccountFlagsEnum.AUTH_REVOCABLE_FLAG : 0) +
@@ -261,7 +262,7 @@ namespace StellarShowcase.DataAccess.Blockchain
             var account = await server.Accounts.Account(accountId);
 
             var adjustAssetAmount = amount.ToString("N7", CultureInfo.InvariantCulture);
-            var adjustedPrice = price.ToString("N7",  CultureInfo.InvariantCulture);
+            var adjustedPrice = price.ToString("N7", CultureInfo.InvariantCulture);
 
             var sell = Asset.CreateNonNativeAsset(sellingAsset.UnitName, sellingAsset.IssuerAccountId);
             var buy = Asset.CreateNonNativeAsset(buyingAsset.UnitName, buyingAsset.IssuerAccountId);
@@ -277,6 +278,29 @@ namespace StellarShowcase.DataAccess.Blockchain
                .ToUnsignedEnvelopeXdrBase64();
         }
 
+        public async Task<string> CreateCancelBuyOrderRawTransaction(string accountId, AssetDto sellingAsset, AssetDto buyingAsset, decimal volume)
+        {
+            using var server = GetServer();
+
+            var account = await server.Accounts.Account(accountId);
+
+            var adjustAssetAmount = volume.ToString("N7", CultureInfo.InvariantCulture);
+            var adjustedPrice = "0";
+
+            var sell = Asset.CreateNonNativeAsset(sellingAsset.UnitName, sellingAsset.IssuerAccountId);
+            var buy = Asset.CreateNonNativeAsset(buyingAsset.UnitName, buyingAsset.IssuerAccountId);
+
+            var sellOfferOp = new ManageBuyOfferOperation.Builder(sell, buy, adjustAssetAmount, adjustedPrice)
+                .SetSourceAccount(account.KeyPair)
+                .Build();
+
+            return new TransactionBuilder(account)
+               .AddOperation(sellOfferOp)
+               .AddTimeBounds(GetTimeBounds())
+               .Build()
+               .ToUnsignedEnvelopeXdrBase64();
+        }
+
         public async Task<string> CreateSellOrderRawTransaction(string accountId, AssetDto sellingAsset, AssetDto buyingAsset, decimal amount, decimal price)
         {
             using var server = GetServer();
@@ -285,6 +309,29 @@ namespace StellarShowcase.DataAccess.Blockchain
 
             var adjustAssetAmount = amount.ToString("N7", CultureInfo.InvariantCulture);
             var adjustedPrice = price.ToString("N7", CultureInfo.InvariantCulture);
+
+            var sell = Asset.CreateNonNativeAsset(sellingAsset.UnitName, sellingAsset.IssuerAccountId);
+            var buy = Asset.CreateNonNativeAsset(buyingAsset.UnitName, buyingAsset.IssuerAccountId);
+
+            var sellOfferOp = new ManageSellOfferOperation.Builder(sell, buy, adjustAssetAmount, adjustedPrice)
+                .SetSourceAccount(account.KeyPair)
+                .Build();
+
+            return new TransactionBuilder(account)
+               .AddOperation(sellOfferOp)
+               .AddTimeBounds(GetTimeBounds())
+               .Build()
+               .ToUnsignedEnvelopeXdrBase64();
+        }
+
+        public async Task<string> CreateCancelSellOrderRawTransaction(string accountId, AssetDto sellingAsset, AssetDto buyingAsset, decimal volume)
+        {
+            using var server = GetServer();
+
+            var account = await server.Accounts.Account(accountId);
+
+            var adjustAssetAmount = volume.ToString("N7", CultureInfo.InvariantCulture);
+            var adjustedPrice = "0";
 
             var sell = Asset.CreateNonNativeAsset(sellingAsset.UnitName, sellingAsset.IssuerAccountId);
             var buy = Asset.CreateNonNativeAsset(buyingAsset.UnitName, buyingAsset.IssuerAccountId);
@@ -326,6 +373,24 @@ namespace StellarShowcase.DataAccess.Blockchain
             };
         }
 
+        public async Task<List<ActiveOrderDto>> GetAccountOrders(string accountId)
+        {
+            using var server = GetServer();
+
+            var offers = await server.Offers.ForAccount(accountId).Execute();
+
+            var result = offers.Records.Select(r => new ActiveOrderDto
+            {
+                Id = long.Parse(r.Id),
+                Price = decimal.Parse(r.Price, NumberStyles.Float, CultureInfo.InvariantCulture),
+                Volume = decimal.Parse(r.Amount, NumberStyles.Float, CultureInfo.InvariantCulture),
+                Buying = ToDto(r.Buying),
+                Selling = ToDto(r.Selling),
+            });
+
+            return result.ToList();
+        }
+
         private Server GetServer()
         {
             var httpClient = _httpClientFactory.CreateClient();
@@ -338,6 +403,25 @@ namespace StellarShowcase.DataAccess.Blockchain
             var dateTimeOffsetMax = new DateTimeOffset(DateTime.UtcNow.AddMinutes(minutes));
             var timeBounds = new TimeBounds(null, dateTimeOffsetMax);
             return timeBounds;
+        }
+
+        private static AssetDto ToDto(Asset asset)
+        {
+            return asset switch
+            {
+                AssetTypeCreditAlphaNum4 nnt4 => new AssetDto
+                {
+                    IssuerAccountId = nnt4.Issuer,
+                    UnitName = nnt4.Code
+                },
+                AssetTypeCreditAlphaNum12 nnt12 => new AssetDto
+                {
+                    IssuerAccountId = nnt12.Issuer,
+                    UnitName = nnt12.Code
+                },
+                AssetTypeNative => new AssetDto { UnitName = "XLM" },
+                _ => throw new NotImplementedException(),
+            };
         }
     }
 }

@@ -17,8 +17,10 @@ namespace StellarShowcase.Repositories.Interfaces
 
         Task TransferAsset(Guid id, Guid issuerId, Guid assetId, string recipientAccountId, decimal amount, string memo = "");
 
-        Task<string> CreateBuyOrder(Guid userAccountId, Guid marketId, decimal volume, decimal price);
+        Task<Guid> CreateBuyOrder(Guid userAccountId, Guid marketId, decimal volume, decimal price);
 
-        Task<string> CreateSellOrder(Guid userAccountId, Guid marketId, decimal volume, decimal price);
+        Task<Guid> CreateSellOrder(Guid userAccountId, Guid marketId, decimal volume, decimal price);
+
+        Task<List<ActiveOrderDto>> GetActiveOrders(Guid userAccountId);
     }
 }

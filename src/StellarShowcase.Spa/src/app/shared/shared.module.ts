@@ -13,6 +13,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTableModule } from '@angular/material/table';
+import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
@@ -20,7 +21,6 @@ import { ContainerComponent } from './container/container.component';
 import { MenuItemComponent } from './menu-item/menu-item.component';
 import { MenuComponent } from './menu/menu.component';
 
-// import { MatTabsModule } from '@angular/material/tabs';
 // import { MatSortModule } from '@angular/material/sort';
 // import { MatChipsModule } from '@angular/material/chips';
 // import { MatNativeDateModule } from '@angular/material/core';
@@ -52,7 +52,7 @@ const MAT_MODULES = [
   // MatNativeDateModule,
   // MatChipsModule,
   // MatExpansionModule,
-  // MatTabsModule,
+  MatTabsModule,
   MatSelectModule,
   MatSnackBarModule,
   // MatDialogModule,

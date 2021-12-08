@@ -40,6 +40,11 @@ $base-gap: 5;
     .pd-#{$i} {
         padding: #{($base-gap * $i)}px !important;
     }
+
+    .pd-x#{$i} {
+        padding-left: #{($base-gap * $i)}px !important;
+        padding-right: #{($base-gap * $i)}px !important;
+    }
 }
 
 .ta-r {

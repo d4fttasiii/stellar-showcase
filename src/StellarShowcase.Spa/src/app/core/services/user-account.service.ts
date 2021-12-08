@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
-import { CreateBuyOrderDto, CreateSellOrderDto, CreateUserAccountDto, UserAccountDto } from '../models/dto';
+import { ActiveOrderDto, CreateBuyOrderDto, CreateSellOrderDto, CreateUserAccountDto, UserAccountDto } from '../models/dto';
 import { ApiService } from './api.service';
 
 @Injectable({
@@ -36,5 +36,9 @@ export class UserAccountService {
   createSellOrder(id: string, order: CreateSellOrderDto): Observable<string> {
     return this.api.post(`${this.controllerName}/${id}/orders/sell`, order);
   }
-  
+
+  getActiverOrders(id: string): Observable<ActiveOrderDto[]> {
+    return this.api.get<ActiveOrderDto[]>(`${this.controllerName}/${id}/orders`);
+  }
+
 }

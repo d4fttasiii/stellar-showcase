@@ -93,3 +93,12 @@ export interface CreateBuyOrderDto {
 }
 
 export interface CreateSellOrderDto extends CreateBuyOrderDto {}
+
+export interface ActiveOrderDto {
+    id: number;
+    marketId: string;
+    buying: AssetDto;
+    selling: AssetDto;
+    volume: number;
+    price: number;
+}

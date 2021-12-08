@@ -120,7 +120,7 @@ namespace StellarShowcase.Repositories.Implementations
             _ = await _stellarClient.SignSubmitRawTransaction(accountKeyPair.PrivateKey, rawTx);
         }
 
-        public async Task<string> CreateSellOrder(Guid userAccountId, Guid marketId, decimal volume, decimal price)
+        public async Task<Guid> CreateSellOrder(Guid userAccountId, Guid marketId, decimal volume, decimal price)
         {
             var account = await _dbContext.UserAccount.FirstOrDefaultAsync(a => a.Id == userAccountId);
             var market = await _dbContext.Market.FirstOrDefaultAsync(m => m.Id == marketId);
@@ -147,10 +147,10 @@ namespace StellarShowcase.Repositories.Implementations
             await _dbContext.Order.AddAsync(order);
             await _dbContext.Save();
 
-            return txId;
+            return order.Id;
         }
 
-        public async Task<string> CreateBuyOrder(Guid userAccountId, Guid marketId, decimal volume, decimal price)
+        public async Task<Guid> CreateBuyOrder(Guid userAccountId, Guid marketId, decimal volume, decimal price)
         {
             var account = await _dbContext.UserAccount.FirstOrDefaultAsync(a => a.Id == userAccountId);
             var market = await _dbContext.Market.FirstOrDefaultAsync(m => m.Id == marketId);
@@ -177,7 +177,43 @@ namespace StellarShowcase.Repositories.Implementations
             await _dbContext.Order.AddAsync(order);
             await _dbContext.Save();
 
-            return txId;
+            return order.Id;
+        }
+
+        public async Task<List<ActiveOrderDto>> GetActiveOrders(Guid userAccountId)
+        {
+            var account = await _dbContext.UserAccount.FirstOrDefaultAsync(a => a.Id == userAccountId);
+            var accountKeyPair = _stellarClient.DeriveKeyPair(account.Mnemonic, 0);
+
+            var orders =  await _stellarClient.GetAccountOrders(accountKeyPair.AccountId);
+            var markets = await (from m in _dbContext.Market
+                                join b in _dbContext.Asset on m.BaseAssetId equals b.Id
+                                join q in _dbContext.Asset on m.QuoteAssetId equals q.Id
+                                select new MarketDto
+                                {
+                                    Id = m.Id,
+                                    Base = new AssetDto
+                                    {
+                                        IssuerAccountId = b.IssuerAccountId,
+                                        UnitName = b.UnitName,
+                                    },
+                                    Quote = new AssetDto
+                                    {
+                                        IssuerAccountId = q.IssuerAccountId,
+                                        UnitName = q.UnitName,
+                                    },
+                                }).ToListAsync();
+
+            foreach (var order in orders)
+            {
+                order.MarketId = markets.FirstOrDefault(m => 
+                    (m.Base.IssuerAccountId == order.Buying.IssuerAccountId && m.Base.UnitName == order.Buying.UnitName && 
+                    m.Quote.IssuerAccountId == order.Selling.IssuerAccountId && m.Quote.UnitName == order.Selling.UnitName) ||
+                    (m.Base.IssuerAccountId == order.Selling.IssuerAccountId && m.Base.UnitName == order.Selling.UnitName &&
+                    m.Quote.IssuerAccountId == order.Buying.IssuerAccountId && m.Quote.UnitName == order.Buying.UnitName))?.Id;
+            }
+
+            return orders;
         }
     }
 }

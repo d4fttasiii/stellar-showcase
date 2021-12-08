@@ -57,14 +57,20 @@ namespace StellarShowcase.API.Controllers
             return await HandleRequest(async () => await _userAccountRepository.CreateTrustline(id, issuerId, assetId));
         }
 
+        [HttpGet, Route("{id}/orders")]
+        public async Task<ActionResult<List<ActiveOrderDto>>> GetActiveOrders([FromRoute] Guid id)
+        {
+            return await HandleRequest(async () => await _userAccountRepository.GetActiveOrders(id));
+        }
+
         [HttpPost, Route("{id}/orders/buy")]
-        public async Task<ActionResult<string>> CreateBuyOrder([FromRoute] Guid id, [FromBody] CreateBuyOrderDto data)
+        public async Task<ActionResult<Guid>> CreateBuyOrder([FromRoute] Guid id, [FromBody] CreateBuyOrderDto data)
         {
             return await HandleRequest(async () => await _userAccountRepository.CreateBuyOrder(id, data.MarketId, data.Volume, data.Price));
         }
 
         [HttpPost, Route("{id}/orders/sell")]
-        public async Task<ActionResult<string>> CreateSellOrder([FromRoute] Guid id, [FromBody] CreateSellOrderDto data)
+        public async Task<ActionResult<Guid>> CreateSellOrder([FromRoute] Guid id, [FromBody] CreateSellOrderDto data)
         {
             return await HandleRequest(async () => await _userAccountRepository.CreateSellOrder(id, data.MarketId, data.Volume, data.Price));
         }

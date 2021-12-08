@@ -1,4 +1,5 @@
 ﻿using StellarShowcase.Domain.Dto;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace StellarShowcase.DataAccess.Blockchain
@@ -30,15 +31,15 @@ namespace StellarShowcase.DataAccess.Blockchain
         Task<string> SignSubmitRawTransaction(string privateKey, string txRaw);
 
         Task<string> CreateBuyOrderRawTransaction(string accountId, AssetDto sellingAsset, AssetDto buyingAsset, decimal amount, decimal price);
-        
+
+        Task<string> CreateCancelSellOrderRawTransaction(string accountId, AssetDto sellingAsset, AssetDto buyingAsset, decimal volume);
+
         Task<string> CreateSellOrderRawTransaction(string accountId, AssetDto sellingAsset, AssetDto buyingAsset, decimal amount, decimal price);
 
-        //Task<List<OfferResponse>> ListBuyOffers(AssetDto buyingAsset);
-
-        //Task<List<OfferResponse>> ListSellOffers(AssetDto sellingAsset);
-
-        //Task<List<TradeResponse>> ListAllTrades(AssetDto baseAsset, AssetDto quoteAsset);
+        Task<string> CreateCancelBuyOrderRawTransaction(string accountId, AssetDto sellingAsset, AssetDto buyingAsset, decimal volume);
 
         Task<OrderBookDto> GetOrderBook(AssetDto baseAsset, AssetDto quoteAsset);
+
+        Task<List<ActiveOrderDto>> GetAccountOrders(string accountId);
     }
 }

@@ -3,7 +3,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 
-import { CreateBuyOrderDto, CreateSellOrderDto, MarketDto, UserAccountDto } from '../../core/models/dto';
+import { ActiveOrderDto, CreateBuyOrderDto, CreateSellOrderDto, MarketDto, UserAccountDto } from '../../core/models/dto';
 import { DexService } from '../../core/services/dex.service';
 import { UserAccountService } from '../../core/services/user-account.service';
 
@@ -14,13 +14,17 @@ import { UserAccountService } from '../../core/services/user-account.service';
 })
 export class TradingComponent implements OnInit {
 
+  loaded = false;
   market: MarketDto;
   userAccounts: UserAccountDto[];
   impersonatedUserAccount: UserAccountDto;
+  userAccountActiveOrders: ActiveOrderDto[];
   model: CreateSellOrderDto | CreateBuyOrderDto;
   isBuy: boolean;
+
   chartOptions: any;
-  loaded = false;
+  orderColumns = ['id', 'buying', 'selling', 'volume', 'price', 'total', 'action'];
+  orderbookColumns = ['volume', 'price', 'total'];
 
   constructor(
     private userAccountService: UserAccountService,
@@ -42,12 +46,9 @@ export class TradingComponent implements OnInit {
     );
   }
 
-  impersonate(userAccount: UserAccountDto) {
-    this.impersonatedUserAccount = userAccount;
-  }
-
-  stopImpersonating() {
-    this.impersonatedUserAccount = undefined;
+  impersonate(event: any) {
+    this.impersonatedUserAccount = this.userAccounts.find(u => u.id === event.value);
+    this.reloadActiveOrders(this.impersonatedUserAccount.id);
   }
 
   toggle() {
@@ -87,6 +88,10 @@ export class TradingComponent implements OnInit {
     }
   }
 
+  public cancelOrder(id: string) {
+
+  }
+
   private loadData(id: string) {
     const q = forkJoin([
       this.dexService.get(id),
@@ -98,6 +103,14 @@ export class TradingComponent implements OnInit {
       this.rebuildChartData();
       this.loaded = true;
     });
+  }
+
+  private reloadActiveOrders(id: string) {
+    this.userAccountService
+      .getActiverOrders(id)
+      .subscribe(
+        (orders) => this.userAccountActiveOrders = orders.filter(o => o.marketId == this.market.id),
+      );
   }
 
   private reloadMarketData() {
