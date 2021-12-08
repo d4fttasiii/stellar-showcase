@@ -10,6 +10,7 @@ export class ContainerComponent {
 
   @Input() title: string;
   @Input() isLoading?: boolean;
+  @Input() isSubmitting?: boolean;
   @Input() backUrl?: string;
   @Input() icon?: string;
 

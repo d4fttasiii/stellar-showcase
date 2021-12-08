@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { ComponentBase } from '../../core/component-base';
 
 import { MarketDto } from '../../core/models/dto';
 import { DexService } from '../../core/services/dex.service';
@@ -13,15 +14,16 @@ interface MarketDtoEx extends MarketDto {
   templateUrl: './list.component.html',
   styleUrls: ['./list.component.scss']
 })
-export class ListComponent implements OnInit {
+export class ListComponent extends ComponentBase implements OnInit {
 
   markets: MarketDtoEx[];
   columns = ['nr', 'name', 'price', 'action'];
-  isLoading = true;
 
   constructor(
     private dexService: DexService,
-    private router: Router) { }
+    private router: Router) {
+      super();
+     }
 
   ngOnInit(): void {
     this.loadData();
@@ -49,7 +51,7 @@ export class ListComponent implements OnInit {
             this.markets.push(market);
           });
         },
-        complete: () => setTimeout(() => this.isLoading = false, 600),
+        complete: () => this.stopLoading(),
       });
   }
 

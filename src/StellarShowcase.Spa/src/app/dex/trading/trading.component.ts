@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 import { forkJoin } from 'rxjs';
+import { ComponentBase } from '../../core/component-base';
 
 import { ActiveOrderDto, CreateBuyOrderDto, CreateSellOrderDto, MarketDto, UserAccountDto } from '../../core/models/dto';
 import { DexService } from '../../core/services/dex.service';
@@ -12,9 +13,8 @@ import { UserAccountService } from '../../core/services/user-account.service';
   templateUrl: './trading.component.html',
   styleUrls: ['./trading.component.scss']
 })
-export class TradingComponent implements OnInit {
+export class TradingComponent extends ComponentBase implements OnInit {
 
-  isLoading = true;
   market: MarketDto;
   userAccounts: UserAccountDto[];
   impersonatedUserAccount: UserAccountDto;
@@ -29,7 +29,9 @@ export class TradingComponent implements OnInit {
     private userAccountService: UserAccountService,
     private dexService: DexService,
     private activatedRoute: ActivatedRoute,
-    private snackBar: MatSnackBar) { }
+    private snackBar: MatSnackBar) {
+    super();
+  }
 
   ngOnInit(): void {
     this.activatedRoute.params.subscribe(
@@ -57,6 +59,7 @@ export class TradingComponent implements OnInit {
   }
 
   submit() {
+    this.isSubmitting = true;
     if (this.isBuy) {
       this.userAccountService
         .createBuyOrder(this.impersonatedUserAccount.id, this.model)
@@ -69,7 +72,10 @@ export class TradingComponent implements OnInit {
               politeness: 'polite',
             });
           },
-          complete: () => this.reloadMarketData(),
+          complete: () => {
+            this.stopSubmitting();
+            this.reloadMarketData();
+          },
         });
     }
     else {
@@ -84,21 +90,28 @@ export class TradingComponent implements OnInit {
               politeness: 'polite',
             });
           },
-          complete: () => this.reloadMarketData()
+          complete: () => {
+            this.stopSubmitting();
+            this.reloadMarketData();
+          },
         });
     }
   }
 
-  public cancelOrder(orderId: number) {
+  cancelOrder(orderId: number) {
+    this.isSubmitting = true;
     this.userAccountService
       .cancelOrder(this.impersonatedUserAccount.id, orderId)
-      .subscribe(() => {
-        this.snackBar.open(`Order ${orderId} cancelled!`, 'OK', {
-          duration: 5000,
-          horizontalPosition: 'center',
-          verticalPosition: 'bottom',
-          politeness: 'polite',
-        });
+      .subscribe({
+        next: () => {
+          this.snackBar.open(`Order ${orderId} cancelled!`, 'OK', {
+            duration: 5000,
+            horizontalPosition: 'center',
+            verticalPosition: 'bottom',
+            politeness: 'polite',
+          });
+        },
+        complete: () => this.stopSubmitting(),
       });
   }
 
@@ -113,7 +126,7 @@ export class TradingComponent implements OnInit {
         this.userAccounts = results[1];
         this.rebuildChartData();
       },
-      complete: () => setTimeout(() => this.isLoading = false, 600),
+      complete: () => this.stopLoading(),
     });
   }
 

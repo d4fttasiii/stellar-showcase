@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
+import { ComponentBase } from '../../core/component-base';
 import { AssetDto, CreateMarketDto } from '../../core/models/dto';
 import { AssetService } from '../../core/services/asset.service';
 import { DexService } from '../../core/services/dex.service';
@@ -10,17 +11,18 @@ import { DexService } from '../../core/services/dex.service';
   templateUrl: './create.component.html',
   styleUrls: ['./create.component.scss']
 })
-export class CreateComponent implements OnInit {
+export class CreateComponent extends ComponentBase implements OnInit {
 
   assets: AssetDto[];
   baseAsset: AssetDto;
   quoteAsset: AssetDto;
-  isLoading = true;
 
   constructor(
     private assetService: AssetService,
     private dexService: DexService,
-    private snackBar: MatSnackBar) { }
+    private snackBar: MatSnackBar) {
+    super();
+  }
 
   ngOnInit(): void {
     this.loadData();
@@ -32,15 +34,19 @@ export class CreateComponent implements OnInit {
       quoteAssetId: this.quoteAsset.id,
       name: `${this.baseAsset.unitName}-${this.quoteAsset.unitName}`,
     };
+    this.isSubmitting = true;
     this.dexService
       .createMarket(model)
-      .subscribe(() => {
-        this.snackBar.open(`Market: ${model.name} created!`, 'OK', {
-          duration: 5000,
-          horizontalPosition: 'center',
-          verticalPosition: 'bottom',
-          politeness: 'polite',
-        });
+      .subscribe({
+        next: () => {
+          this.snackBar.open(`Market: ${model.name} created!`, 'OK', {
+            duration: 5000,
+            horizontalPosition: 'center',
+            verticalPosition: 'bottom',
+            politeness: 'polite',
+          });
+        },
+        complete: () => this.stopSubmitting()
       });
   }
 
@@ -52,8 +58,7 @@ export class CreateComponent implements OnInit {
         next: assets => {
           this.assets = assets;
         },
-        complete: () => setTimeout(() =>
-          this.isLoading = false, 600),
+        complete: () => this.stopLoading(),
       });
   }
 
