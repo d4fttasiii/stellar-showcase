@@ -278,20 +278,17 @@ namespace StellarShowcase.DataAccess.Blockchain
                .ToUnsignedEnvelopeXdrBase64();
         }
 
-        public async Task<string> CreateCancelBuyOrderRawTransaction(string accountId, AssetDto sellingAsset, AssetDto buyingAsset, decimal volume)
+        public async Task<string> CreateCancelBuyOrderRawTransaction(string accountId, long orderId, AssetDto sellingAsset, AssetDto buyingAsset)
         {
             using var server = GetServer();
 
             var account = await server.Accounts.Account(accountId);
-
-            var adjustAssetAmount = volume.ToString("N7", CultureInfo.InvariantCulture);
-            var adjustedPrice = "0";
-
             var sell = Asset.CreateNonNativeAsset(sellingAsset.UnitName, sellingAsset.IssuerAccountId);
             var buy = Asset.CreateNonNativeAsset(buyingAsset.UnitName, buyingAsset.IssuerAccountId);
 
-            var sellOfferOp = new ManageBuyOfferOperation.Builder(sell, buy, adjustAssetAmount, adjustedPrice)
+            var sellOfferOp = new ManageBuyOfferOperation.Builder(sell, buy, "0", "1")
                 .SetSourceAccount(account.KeyPair)
+                .SetOfferId(orderId)
                 .Build();
 
             return new TransactionBuilder(account)
@@ -324,20 +321,17 @@ namespace StellarShowcase.DataAccess.Blockchain
                .ToUnsignedEnvelopeXdrBase64();
         }
 
-        public async Task<string> CreateCancelSellOrderRawTransaction(string accountId, AssetDto sellingAsset, AssetDto buyingAsset, decimal volume)
+        public async Task<string> CreateCancelSellOrderRawTransaction(string accountId, long orderId, AssetDto sellingAsset, AssetDto buyingAsset)
         {
             using var server = GetServer();
 
             var account = await server.Accounts.Account(accountId);
-
-            var adjustAssetAmount = volume.ToString("N7", CultureInfo.InvariantCulture);
-            var adjustedPrice = "0";
-
             var sell = Asset.CreateNonNativeAsset(sellingAsset.UnitName, sellingAsset.IssuerAccountId);
             var buy = Asset.CreateNonNativeAsset(buyingAsset.UnitName, buyingAsset.IssuerAccountId);
 
-            var sellOfferOp = new ManageSellOfferOperation.Builder(sell, buy, adjustAssetAmount, adjustedPrice)
+            var sellOfferOp = new ManageSellOfferOperation.Builder(sell, buy, "0", "1")
                 .SetSourceAccount(account.KeyPair)
+                .SetOfferId(orderId)
                 .Build();
 
             return new TransactionBuilder(account)

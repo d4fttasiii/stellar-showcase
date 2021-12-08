@@ -22,5 +22,7 @@ namespace StellarShowcase.Repositories.Interfaces
         Task<Guid> CreateSellOrder(Guid userAccountId, Guid marketId, decimal volume, decimal price);
 
         Task<List<ActiveOrderDto>> GetActiveOrders(Guid userAccountId);
+
+        Task<bool> CancelOrder(Guid userAccountId, long orderId);
     }
 }

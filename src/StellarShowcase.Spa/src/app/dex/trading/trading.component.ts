@@ -88,8 +88,17 @@ export class TradingComponent implements OnInit {
     }
   }
 
-  public cancelOrder(id: string) {
-
+  public cancelOrder(orderId: number) {
+    this.userAccountService
+      .cancelOrder(this.impersonatedUserAccount.id, orderId)
+      .subscribe(() => {
+        this.snackBar.open(`Order ${orderId} cancelled!`, 'OK', {
+          duration: 5000,
+          horizontalPosition: 'center',
+          verticalPosition: 'bottom',
+          politeness: 'polite',
+        });
+      });
   }
 
   private loadData(id: string) {
@@ -139,34 +148,38 @@ export class TradingComponent implements OnInit {
     });
 
     this.chartOptions = {
+      tooltip: {
+      },
       legend: {
-        data: ['Buy', 'Sell'],
-        // align: 'top',
+        show: false,
       },
-      tooltip: {},
+      grid: {
+        left: '0%',
+        right: '0%',
+        bottom: '0%',
+        top: '0%',
+        containLabel: true
+      },
       xAxis: {
-        data: xAxisData,
-        silent: false,
-        splitLine: {
-          show: false,
-        },
+        type: 'value',
+        // boundaryGap: [0, 0.01]
       },
-      yAxis: {},
+      yAxis: {
+        type: 'category',
+        data: xAxisData
+      },
       series: [
         {
-          name: 'Buy Volume',
+          name: 'Buy',
           type: 'bar',
-          data: yAxisDataBuy,
-          animationDelay: (idx) => idx * 10,
-        }, {
-          name: 'Sell Volume',
-          type: 'bar',
-          data: yAxisDataSell,
-          animationDelay: (idx) => idx * 10,
+          data: yAxisDataBuy
         },
-      ],
-      animationEasing: 'elasticOut',
-      animationDelayUpdate: (idx) => idx * 5,
+        {
+          name: 'Sell',
+          type: 'bar',
+          data: yAxisDataSell
+        }
+      ]
     };
   }
 }

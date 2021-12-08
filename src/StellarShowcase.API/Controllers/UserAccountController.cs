@@ -74,5 +74,11 @@ namespace StellarShowcase.API.Controllers
         {
             return await HandleRequest(async () => await _userAccountRepository.CreateSellOrder(id, data.MarketId, data.Volume, data.Price));
         }
+
+        [HttpDelete, Route("{id}/orders/{orderId}/cancel")]
+        public async Task<ActionResult<bool>> CancelOrder([FromRoute] Guid id, [FromRoute] long orderId)
+        {
+            return await HandleRequest(async () => await _userAccountRepository.CancelOrder(id, orderId));
+        } 
     }
 }

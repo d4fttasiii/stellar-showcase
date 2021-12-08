@@ -41,4 +41,8 @@ export class UserAccountService {
     return this.api.get<ActiveOrderDto[]>(`${this.controllerName}/${id}/orders`);
   }
 
+  cancelOrder(id: string, orderId: number): Observable<boolean> {
+    return this.api.delete<boolean>(`${this.controllerName}/${id}/orders/${orderId}/cancel`);
+  }
+
 }

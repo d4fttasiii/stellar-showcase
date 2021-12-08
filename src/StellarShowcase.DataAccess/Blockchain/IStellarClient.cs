@@ -32,11 +32,11 @@ namespace StellarShowcase.DataAccess.Blockchain
 
         Task<string> CreateBuyOrderRawTransaction(string accountId, AssetDto sellingAsset, AssetDto buyingAsset, decimal amount, decimal price);
 
-        Task<string> CreateCancelSellOrderRawTransaction(string accountId, AssetDto sellingAsset, AssetDto buyingAsset, decimal volume);
+        Task<string> CreateCancelSellOrderRawTransaction(string accountId, long orderId, AssetDto sellingAsset, AssetDto buyingAsset);
 
         Task<string> CreateSellOrderRawTransaction(string accountId, AssetDto sellingAsset, AssetDto buyingAsset, decimal amount, decimal price);
 
-        Task<string> CreateCancelBuyOrderRawTransaction(string accountId, AssetDto sellingAsset, AssetDto buyingAsset, decimal volume);
+        Task<string> CreateCancelBuyOrderRawTransaction(string accountId, long orderId, AssetDto sellingAsset, AssetDto buyingAsset);
 
         Task<OrderBookDto> GetOrderBook(AssetDto baseAsset, AssetDto quoteAsset);
 
