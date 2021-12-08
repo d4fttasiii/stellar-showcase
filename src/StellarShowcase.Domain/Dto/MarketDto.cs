@@ -10,5 +10,6 @@ namespace StellarShowcase.Domain.Dto
         public AssetDto Base { get; set; }
         public AssetDto Quote { get; set; }
         public OrderBookDto OrderBooks { get; set; }
+        public decimal Price { get; set; }
     }
 }

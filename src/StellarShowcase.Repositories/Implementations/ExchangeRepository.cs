@@ -24,13 +24,32 @@ namespace StellarShowcase.Repositories.Implementations
 
         public async Task<List<MarketDto>> GetMarkets()
         {
-            var markets = await _dbContext.Market
-                .Select(m => new MarketDto
-                {
-                    Id = m.Id,
-                    Name = m.Name,
-                })
-                .ToListAsync();
+            var markets = await (from m in _dbContext.Market
+                                 join b in _dbContext.Asset on m.BaseAssetId equals b.Id
+                                 join q in _dbContext.Asset on m.QuoteAssetId equals q.Id
+                                 select new MarketDto
+                                 {
+                                     Id = m.Id,
+                                     Name = m.Name,
+                                     Base = new AssetDto
+                                     {
+                                         IssuerAccountId = b.IssuerAccountId,
+                                         TotalSupply = b.TotalSupply,
+                                         UnitName = b.UnitName,
+                                     },
+                                     Quote = new AssetDto
+                                     {
+                                         IssuerAccountId = q.IssuerAccountId,
+                                         TotalSupply = q.TotalSupply,
+                                         UnitName = q.UnitName,
+                                     },
+                                 }).ToListAsync();
+
+            foreach (var m in markets)
+            {
+                var orderbook = await _stellarClient.GetOrderBook(m.Base, m.Quote);
+                m.Price = orderbook.Sells.Min(s => s.Price);
+            }
 
             return markets;
         }
@@ -71,7 +90,7 @@ namespace StellarShowcase.Repositories.Implementations
 
             if (await _dbContext.Market.AnyAsync(m => m.Name == name ||
                 (m.BaseAssetId == baseAssetId && m.QuoteAssetId == quoteAssetId) ||
-                (m.BaseAssetId == quoteAssetId&& m.QuoteAssetId == baseAssetId)))
+                (m.BaseAssetId == quoteAssetId && m.QuoteAssetId == baseAssetId)))
             {
                 throw new ArgumentException($"Market {name} already exists");
             }
