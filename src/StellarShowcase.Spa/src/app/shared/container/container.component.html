@@ -1,12 +1,15 @@
 <div class="mg-t10">
-    <mat-card>
-        <mat-card-header class="ai-c">
-            <div mat-card-avatar *ngIf="icon">
-                <i class="fa fa-fw fa-2x" [ngClass]="icon"></i>
-            </div>
-            <mat-card-title [class.mg-b0]="!subTitle">{{ title }}</mat-card-title>
-            <mat-card-subtitle *ngIf="subTitle">{{ subTitle }}</mat-card-subtitle>
-        </mat-card-header>
+    <mat-card class="mg-0 pd-0">
+        <mat-toolbar>
+            <span class="mg-r2" *ngIf="icon">
+                <mat-icon fontSet="fa" [fontIcon]="icon"></mat-icon>
+            </span>
+            <span>{{ title }}</span>
+            <span class="title-spacer"></span>
+            <button mat-mini-fab color="primary" [disabled]="!backUrl" (click)="goBack()">
+                <mat-icon fontSet="fa" fontIcon="fa-step-backward"></mat-icon>
+            </button>
+        </mat-toolbar>
     </mat-card>
     <mat-card class="mg-t10">
         <ng-content></ng-content>

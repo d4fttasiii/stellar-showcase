@@ -13,7 +13,7 @@ import { UserAccountService } from '../../core/services/user-account.service';
 })
 export class AddAssetComponent implements OnInit {
 
-  private id: string;
+  id: string;
   selectedAsset: AssetDto;
   assets: AssetDto[];
   loaded = false;
@@ -36,12 +36,15 @@ export class AddAssetComponent implements OnInit {
   submit() {
     this.userAccountService
       .createTrustline(this.id, this.selectedAsset.id, this.selectedAsset.issuerId)
-      .subscribe(() => this.snackBar.open(`Asset: ${this.selectedAsset.unitName} added!`, 'OK', {
-        duration: 5000,
-        horizontalPosition: 'center',
-        verticalPosition: 'bottom',
-        politeness: 'polite',
-      }));
+      .subscribe(() => {
+        this.snackBar.open(`Asset: ${this.selectedAsset.unitName} added!`, 'OK', {
+          duration: 5000,
+          horizontalPosition: 'center',
+          verticalPosition: 'bottom',
+          politeness: 'polite',
+        });
+        this.router.navigate(['user']);
+      });
   }
 
   private loadData() {

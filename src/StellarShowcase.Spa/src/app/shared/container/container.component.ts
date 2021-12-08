@@ -1,19 +1,21 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-container',
   templateUrl: './container.component.html',
   styleUrls: ['./container.component.scss']
 })
-export class ContainerComponent implements OnInit {
+export class ContainerComponent {
 
   @Input() title: string;
-  @Input() subTitle?: string;
+  @Input() backUrl?: string;
   @Input() icon?: string;
 
-  constructor() { }
+  constructor(private router: Router) { }
 
-  ngOnInit(): void {
+  goBack() {
+    this.router.navigate([this.backUrl]);
   }
 
 }

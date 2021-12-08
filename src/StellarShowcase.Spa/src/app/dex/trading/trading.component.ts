@@ -51,8 +51,11 @@ export class TradingComponent implements OnInit {
     this.reloadActiveOrders(this.impersonatedUserAccount.id);
   }
 
-  toggle() {
-    this.isBuy = !this.isBuy;
+  toggle(idx: number) {
+    if (idx > 1)
+      return;
+
+    this.isBuy = idx === 0;
   }
 
   submit() {
@@ -157,16 +160,16 @@ export class TradingComponent implements OnInit {
         left: '0%',
         right: '0%',
         bottom: '0%',
-        top: '0%',
+        top: '5%',
         containLabel: true
       },
       xAxis: {
-        type: 'value',
+        type: 'category',
+        data: xAxisData
         // boundaryGap: [0, 0.01]
       },
       yAxis: {
-        type: 'category',
-        data: xAxisData
+        type: 'value',
       },
       series: [
         {
