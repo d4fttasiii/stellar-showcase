@@ -181,14 +181,13 @@ namespace StellarShowcase.Repositories.Implementations
             var account = await _dbContext.UserAccount.FirstOrDefaultAsync(a => a.Id == tx.UserAccountId);
 
             var distributorKeyPair = _stellarClient.DeriveKeyPair(issuer.Mnemonic, 1);
-            var accountKeyPair = _stellarClient.DeriveKeyPair(account.Mnemonic, 0);
 
             var rawTx = await _stellarClient.BuildRawAssetTransaction(new AssetDto
             {
                 IssuerAccountId = asset.IssuerAccountId,
                 UnitName = asset.UnitName,
                 TotalSupply = asset.TotalSupply,
-            }, distributorKeyPair.AccountId, accountKeyPair.AccountId, tx.Amount, tx.Memo);
+            }, distributorKeyPair.AccountId, account.AccountId, tx.Amount, tx.Memo);
 
             return await _stellarClient.SignSubmitRawTransaction(distributorKeyPair.PrivateKey, rawTx);
         }

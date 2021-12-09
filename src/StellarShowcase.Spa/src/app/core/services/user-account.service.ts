@@ -1,7 +1,15 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import ls from 'localstorage-slim';
 
-import { ActiveOrderDto, CreateBuyOrderDto, CreateSellOrderDto, CreateUserAccountDto, UserAccountDto } from '../models/dto';
+import {
+  ActiveOrderDto,
+  CreateBuyOrderDto,
+  CreateSellOrderDto,
+  CreateUserAccountDto,
+  CredentialsDto,
+  UserAccountDto,
+} from '../models/dto';
 import { ApiService } from './api.service';
 
 @Injectable({
@@ -25,8 +33,8 @@ export class UserAccountService {
     return this.api.post(this.controllerName, data);
   }
 
-  createTrustline(id: string, assetId: string, issuerId: string): Observable<string> {
-    return this.api.post(`${this.controllerName}/${id}/asset/${assetId}/create-trustline/${issuerId}`, {});
+  createTrustline(id: string, assetId: string, issuerId: string, credentials: CredentialsDto): Observable<string> {
+    return this.api.post(`${this.controllerName}/${id}/asset/${assetId}/create-trustline/${issuerId}`, credentials);
   }
 
   createBuyOrder(id: string, order: CreateBuyOrderDto): Observable<string> {
@@ -43,6 +51,19 @@ export class UserAccountService {
 
   cancelOrder(id: string, orderId: number): Observable<boolean> {
     return this.api.delete<boolean>(`${this.controllerName}/${id}/orders/${orderId}/cancel`);
+  }
+
+  storePassphrase(id: string, passphrase: string) {
+    ls.set(id, passphrase, {
+      encrypt: true,
+      ttl: 300,
+    });
+  }
+
+  getPassphrase(id: string): string {
+    return ls.get(id, {
+      decrypt: true
+    });
   }
 
 }

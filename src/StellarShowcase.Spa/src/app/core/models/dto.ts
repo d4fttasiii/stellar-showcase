@@ -21,11 +21,13 @@ export interface CreateUserAccountDto {
     fullAddress: string;
     email: string;
     phone: string;
+    passphrase: string;
 }
 
 export interface UserAccountDto extends CreateUserAccountDto {
     id: string;
     account: AccountDto;
+    accountId: string;
 }
 
 export interface UpsertAssetDto {
@@ -90,6 +92,7 @@ export interface CreateBuyOrderDto {
     marketId: string;
     price: number;
     volume: number;
+    passphrase: string;
 }
 
 export interface CreateSellOrderDto extends CreateBuyOrderDto {}
@@ -101,4 +104,8 @@ export interface ActiveOrderDto {
     selling: AssetDto;
     volume: number;
     price: number;
+}
+
+export interface CredentialsDto {
+    passphrase: string;
 }

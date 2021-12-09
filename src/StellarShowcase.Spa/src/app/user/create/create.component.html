@@ -1,4 +1,4 @@
-<app-container title="New User Account" icon="fa-edit" backUrl="/user" [isLoading]="isLoading">
+<app-container title="New User Account" icon="fa-edit" backUrl="/user" [isLoading]="isLoading" [isSubmitting]="isSubmitting">
     <form autocomplete="off">
         <div>
             <mat-form-field appearance="standard" class="w-mn30">
@@ -25,6 +25,13 @@
             </mat-form-field>
         </div>
         <div>
+            <mat-form-field appearance="standard" class="w-mn30">
+                <mat-label>Passphrase</mat-label>
+                <input type="password" name="passphrase" required matInput [(ngModel)]="model.passphrase" />
+                <mat-hint>Wallet access encryption key.</mat-hint>
+            </mat-form-field>
+        </div>
+        <div class="mg-t3">
             <button type="button" color="primary" mat-raised-button (click)="submit()">Submit</button>
         </div>
     </form>

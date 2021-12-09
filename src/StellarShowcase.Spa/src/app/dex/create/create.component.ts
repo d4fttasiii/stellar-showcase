@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
 
 import { ComponentBase } from '../../core/component-base';
 import { AssetDto, CreateMarketDto } from '../../core/models/dto';
@@ -20,7 +21,8 @@ export class CreateComponent extends ComponentBase implements OnInit {
   constructor(
     private assetService: AssetService,
     private dexService: DexService,
-    private snackBar: MatSnackBar) {
+    private snackBar: MatSnackBar,
+    private router: Router) {
     super();
   }
 
@@ -57,6 +59,7 @@ export class CreateComponent extends ComponentBase implements OnInit {
       .subscribe({
         next: assets => {
           this.assets = assets;
+          this.router.navigate(['dex']);
         },
         complete: () => this.stopLoading(),
       });

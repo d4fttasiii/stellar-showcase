@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 import { forkJoin } from 'rxjs';
+import { ComponentBase } from 'src/app/core/component-base';
 
 import { IssuerDto, IssuerTransferDto, UserAccountDto } from '../../core/models/dto';
 import { IssuerService } from '../../core/services/issuer.service';
@@ -12,19 +13,20 @@ import { UserAccountService } from '../../core/services/user-account.service';
   templateUrl: './transfer-asset.component.html',
   styleUrls: ['./transfer-asset.component.scss']
 })
-export class TransferAssetComponent implements OnInit {
+export class TransferAssetComponent extends ComponentBase implements OnInit {
 
   assetId: string;
   issuer: IssuerDto;
   userAccounts: UserAccountDto[];
   model: IssuerTransferDto;
-  isLoading = true;
 
   constructor(
     private issuerService: IssuerService,
     private userAccountService: UserAccountService,
     private activatedRoute: ActivatedRoute,
-    private snackBar: MatSnackBar) { }
+    private snackBar: MatSnackBar) {
+    super();
+  }
 
   ngOnInit(): void {
     this.model = {
@@ -39,15 +41,19 @@ export class TransferAssetComponent implements OnInit {
   }
 
   submit() {
+    this.isSubmitting = true;
     this.issuerService
       .transferAsset(this.issuer.id, this.assetId, this.model)
-      .subscribe(() => {
-        this.snackBar.open(`Transferred ${this.model.amount}!`, 'OK', {
-          duration: 5000,
-          horizontalPosition: 'center',
-          verticalPosition: 'bottom',
-          politeness: 'polite',
-        });
+      .subscribe({
+        next: () => {
+          this.snackBar.open(`Transferred ${this.model.amount}!`, 'OK', {
+            duration: 5000,
+            horizontalPosition: 'center',
+            verticalPosition: 'bottom',
+            politeness: 'polite',
+          });
+        },
+        complete: () => this.stopSubmitting(),
       });
   }
 
@@ -62,7 +68,7 @@ export class TransferAssetComponent implements OnInit {
         this.issuer = results[0];
         this.userAccounts = results[1];
       },
-      complete: () => setTimeout(() => this.isLoading = false, 600),
+      complete: () => this.stopLoading(),
     });
   }
 

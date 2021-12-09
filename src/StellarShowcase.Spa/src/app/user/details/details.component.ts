@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
+import { ComponentBase } from '../../core/component-base';
 import { UserAccountDto } from '../../core/models/dto';
 import { UserAccountService } from '../../core/services/user-account.service';
 
@@ -9,15 +10,16 @@ import { UserAccountService } from '../../core/services/user-account.service';
   templateUrl: './details.component.html',
   styleUrls: ['./details.component.scss']
 })
-export class DetailsComponent implements OnInit {
+export class DetailsComponent extends ComponentBase implements OnInit {
 
   userAccount: UserAccountDto;
-  isLoading = true;
 
   constructor(
     private userAccountService: UserAccountService,
     private activatedRoute: ActivatedRoute,
-    private router: Router) { }
+    private router: Router) {
+      super();
+  }
 
   ngOnInit(): void {
     this.activatedRoute.params.subscribe(
@@ -35,7 +37,7 @@ export class DetailsComponent implements OnInit {
       .get(id)
       .subscribe({
         next: result => this.userAccount = result,
-        complete: () => setTimeout(() => this.isLoading = false, 600),
+        complete: () => this.stopLoading(),
       });
   }
 }

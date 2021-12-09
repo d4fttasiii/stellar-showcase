@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using StellarShowcase.DataAccess.Blockchain;
 using StellarShowcase.DataAccess.Database;
+using StellarShowcase.DataAccess.Security;
 using StellarShowcase.Domain.Dto;
 using StellarShowcase.Domain.Entities;
 using StellarShowcase.Repositories.Interfaces;
@@ -15,18 +16,24 @@ namespace StellarShowcase.Repositories.Implementations
     {
         private readonly IAppDbContext _dbContext;
         private readonly IStellarClient _stellarClient;
+        private readonly IEncryptor _encryptor;
 
-        public UserAccountRepository(IAppDbContext dbContext, IStellarClient stellarClient)
+        public UserAccountRepository(IAppDbContext dbContext, IStellarClient stellarClient, IEncryptor encryptor)
         {
             _dbContext = dbContext;
             _stellarClient = stellarClient;
+            _encryptor = encryptor;
         }
 
         public async Task<Guid> AddUserAccount(CreateUserAccountDto userDto)
         {
+            var mnemonic = _stellarClient.GenerateMnemonic();
+            var account = _stellarClient.DeriveKeyPair(mnemonic, 0);
+
             var userAccount = EntityFactory.Create<UserAccountEntity>(ua =>
             {
-                ua.Mnemonic = _stellarClient.GenerateMnemonic();
+                ua.Mnemonic = _encryptor.EncryptString(mnemonic, userDto.Passphrase);
+                ua.AccountId = account.AccountId;
                 ua.FullName = userDto.FullName;
                 ua.Email = userDto.Email;
                 ua.FullAddress = userDto.FullAddress;
@@ -36,7 +43,6 @@ namespace StellarShowcase.Repositories.Implementations
             //
             // Send 10.000 testnet XLM to addresses
             //
-            var account = _stellarClient.DeriveKeyPair(userAccount.Mnemonic, 0);
             await _stellarClient.FundAccount(account.AccountId);
 
             await _dbContext.UserAccount.AddAsync(userAccount);
@@ -55,6 +61,7 @@ namespace StellarShowcase.Repositories.Implementations
                     Phone = u.Phone,
                     FullName = u.FullName,
                     FullAddress = u.FullAddress,
+                    AccountId = u.AccountId,
                 })
                 .ToListAsync();
         }
@@ -62,11 +69,9 @@ namespace StellarShowcase.Repositories.Implementations
         public async Task<UserAccountDto> GetUserAccount(Guid id)
         {
             var userAccount = await _dbContext.UserAccount
-                .Include(u => u.Orders)
                 .FirstOrDefaultAsync(i => i.Id == id);
 
-            var accountKeyPair = _stellarClient.DeriveKeyPair(userAccount.Mnemonic, 0);
-            var account = await _stellarClient.GetAccount(accountKeyPair.AccountId);
+            var account = await _stellarClient.GetAccount(userAccount.AccountId);
 
             return new UserAccountDto
             {
@@ -79,7 +84,7 @@ namespace StellarShowcase.Repositories.Implementations
             };
         }
 
-        public async Task CreateTrustline(Guid id, Guid issuerId, Guid assetId, decimal? limit = null)
+        public async Task CreateTrustline(Guid id, string passphrase, Guid issuerId, Guid assetId, decimal? limit = null)
         {
             var account = await _dbContext.UserAccount.FirstOrDefaultAsync(a => a.Id == id);
             var issuer = await _dbContext.Issuer
@@ -88,7 +93,8 @@ namespace StellarShowcase.Repositories.Implementations
             var asset = issuer.Assets.FirstOrDefault(a => a.Id == assetId);
 
             var issuerKeyPair = _stellarClient.DeriveKeyPair(issuer.Mnemonic, 0);
-            var accountKeyPair = _stellarClient.DeriveKeyPair(account.Mnemonic, 0);
+            var accountMnemonic = _encryptor.DecryptToString(account.Mnemonic, passphrase);
+            var accountKeyPair = _stellarClient.DeriveKeyPair(accountMnemonic, 0);
 
             var rawTx = await _stellarClient.BuildRawCreateTrustlineTransaction(new AssetDto
             {
@@ -100,7 +106,7 @@ namespace StellarShowcase.Repositories.Implementations
             _ = await _stellarClient.SignSubmitRawTransaction(accountKeyPair.PrivateKey, rawTx);
         }
 
-        public async Task TransferAsset(Guid id, Guid issuerId, Guid assetId, string recipientAccountId, decimal amount, string memo = "")
+        public async Task TransferAsset(Guid id, string passphrase, Guid issuerId, Guid assetId, string recipientAccountId, decimal amount, string memo = "")
         {
             var account = await _dbContext.UserAccount.FirstOrDefaultAsync(a => a.Id == id);
             var issuer = await _dbContext.Issuer
@@ -108,7 +114,8 @@ namespace StellarShowcase.Repositories.Implementations
                .FirstOrDefaultAsync(i => i.Id == issuerId);
             var asset = issuer.Assets.FirstOrDefault(a => a.Id == assetId);
 
-            var accountKeyPair = _stellarClient.DeriveKeyPair(account.Mnemonic, 0);
+            var accountMnemonic = _encryptor.DecryptToString(issuer.Mnemonic, passphrase);
+            var accountKeyPair = _stellarClient.DeriveKeyPair(accountMnemonic, 0);
 
             var rawTx = await _stellarClient.BuildRawAssetTransaction(new AssetDto
             {
@@ -120,84 +127,61 @@ namespace StellarShowcase.Repositories.Implementations
             _ = await _stellarClient.SignSubmitRawTransaction(accountKeyPair.PrivateKey, rawTx);
         }
 
-        public async Task<Guid> CreateSellOrder(Guid userAccountId, Guid marketId, decimal volume, decimal price)
+        public async Task CreateSellOrder(Guid userAccountId, string passphrase, Guid marketId, decimal volume, decimal price)
         {
             var account = await _dbContext.UserAccount.FirstOrDefaultAsync(a => a.Id == userAccountId);
             var market = await _dbContext.Market.FirstOrDefaultAsync(m => m.Id == marketId);
             var sellAsset = await _dbContext.Asset.FirstOrDefaultAsync(a => a.Id == market.BaseAssetId);
             var buyAsset = await _dbContext.Asset.FirstOrDefaultAsync(a => a.Id == market.QuoteAssetId);
 
-            var accountKeyPair = _stellarClient.DeriveKeyPair(account.Mnemonic, 0);
+            var accountMnemonic = _encryptor.DecryptToString(account.Mnemonic, passphrase);
+            var accountKeyPair = _stellarClient.DeriveKeyPair(accountMnemonic, 0);
+
             var orderTx = await _stellarClient.CreateSellOrderRawTransaction(accountKeyPair.AccountId,
                 new AssetDto { IssuerAccountId = sellAsset.IssuerAccountId, UnitName = sellAsset.UnitName },
                 new AssetDto { IssuerAccountId = buyAsset.IssuerAccountId, UnitName = buyAsset.UnitName },
                 volume, price);
 
-            var txId = await _stellarClient.SignSubmitRawTransaction(accountKeyPair.PrivateKey, orderTx);
-
-            var order = EntityFactory.Create<OrderEntity>(o =>
-            {
-                o.UserAccountId = userAccountId;
-                o.MarketId = marketId;
-                o.Price = price;
-                o.Volume = volume;
-                o.TxId = txId;
-            });
-
-            await _dbContext.Order.AddAsync(order);
-            await _dbContext.Save();
-
-            return order.Id;
+            await _stellarClient.SignSubmitRawTransaction(accountKeyPair.PrivateKey, orderTx);
         }
 
-        public async Task<Guid> CreateBuyOrder(Guid userAccountId, Guid marketId, decimal volume, decimal price)
+        public async Task CreateBuyOrder(Guid userAccountId, string passphrase, Guid marketId, decimal volume, decimal price)
         {
             var account = await _dbContext.UserAccount.FirstOrDefaultAsync(a => a.Id == userAccountId);
             var market = await _dbContext.Market.FirstOrDefaultAsync(m => m.Id == marketId);
             var buyAsset = await _dbContext.Asset.FirstOrDefaultAsync(a => a.Id == market.BaseAssetId);
             var sellAsset = await _dbContext.Asset.FirstOrDefaultAsync(a => a.Id == market.QuoteAssetId);
 
-            var accountKeyPair = _stellarClient.DeriveKeyPair(account.Mnemonic, 0);
+            var accountMnemonic = _encryptor.DecryptToString(account.Mnemonic, passphrase);
+            var accountKeyPair = _stellarClient.DeriveKeyPair(accountMnemonic, 0);
+
             var orderTx = await _stellarClient.CreateBuyOrderRawTransaction(accountKeyPair.AccountId,
                 new AssetDto { IssuerAccountId = sellAsset.IssuerAccountId, UnitName = sellAsset.UnitName },
                 new AssetDto { IssuerAccountId = buyAsset.IssuerAccountId, UnitName = buyAsset.UnitName },
                 volume, price);
 
-            var txId = await _stellarClient.SignSubmitRawTransaction(accountKeyPair.PrivateKey, orderTx);
-
-            var order = EntityFactory.Create<OrderEntity>(o =>
-            {
-                o.UserAccountId = userAccountId;
-                o.MarketId = marketId;
-                o.Price = price;
-                o.Volume = volume;
-                o.TxId = txId;
-            });
-
-            await _dbContext.Order.AddAsync(order);
-            await _dbContext.Save();
-
-            return order.Id;
+            await _stellarClient.SignSubmitRawTransaction(accountKeyPair.PrivateKey, orderTx);
         }
 
         public async Task<List<ActiveOrderDto>> GetActiveOrders(Guid userAccountId)
         {
             var account = await _dbContext.UserAccount.FirstOrDefaultAsync(a => a.Id == userAccountId);
-            var accountKeyPair = _stellarClient.DeriveKeyPair(account.Mnemonic, 0);
 
-            return await GetOrders(accountKeyPair.AccountId);
+            return await GetOrders(account.AccountId);
         }
 
-        public async Task<bool> CancelOrder(Guid userAccountId, long orderId)
+        public async Task<bool> CancelOrder(Guid userAccountId, string passphrase, long orderId)
         {
             var account = await _dbContext.UserAccount.FirstOrDefaultAsync(a => a.Id == userAccountId);
-            var accountKeyPair = _stellarClient.DeriveKeyPair(account.Mnemonic, 0);
+            var accountMnemonic = _encryptor.DecryptToString(account.Mnemonic, passphrase);
+            var accountKeyPair = _stellarClient.DeriveKeyPair(accountMnemonic, 0);
+
             var orders = await GetOrders(accountKeyPair.AccountId);
 
-            var orderToCancel = orders.FirstOrDefault(o => o.Id == orderId) ?? 
+            var orderToCancel = orders.FirstOrDefault(o => o.Id == orderId) ??
                 throw new ArgumentException($"Unable to find order: ${orderId}");
 
-            var cancelOrderTx = await IsBuy(orderToCancel) ? 
+            var cancelOrderTx = await IsBuy(orderToCancel) ?
                 await _stellarClient.CreateCancelBuyOrderRawTransaction(accountKeyPair.AccountId, orderId, orderToCancel.Selling, orderToCancel.Buying) :
                 await _stellarClient.CreateCancelSellOrderRawTransaction(accountKeyPair.AccountId, orderId, orderToCancel.Selling, orderToCancel.Buying);
 
@@ -226,7 +210,7 @@ namespace StellarShowcase.Repositories.Implementations
                                     },
                                 }).FirstOrDefaultAsync();
 
-            return market.Base.IssuerAccountId == order.Buying.IssuerAccountId && 
+            return market.Base.IssuerAccountId == order.Buying.IssuerAccountId &&
                    market.Base.UnitName == order.Buying.UnitName &&
                    market.Quote.IssuerAccountId == order.Selling.IssuerAccountId &&
                    market.Quote.UnitName == order.Selling.UnitName;

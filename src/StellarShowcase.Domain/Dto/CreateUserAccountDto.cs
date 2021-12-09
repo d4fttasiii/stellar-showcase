@@ -8,11 +8,13 @@ namespace StellarShowcase.Domain.Dto
         public string FullAddress { get; set; }
         public string Email { get; set; }
         public string Phone { get; set; }
+        public string Passphrase { get; set; }
     }
 
     public class UserAccountDto : CreateUserAccountDto
     {
         public Guid Id { get; set; }
         public AccountDto Account { get; set; }
+        public string AccountId { get; set; }
     }
 }

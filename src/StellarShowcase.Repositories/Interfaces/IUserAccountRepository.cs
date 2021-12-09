@@ -13,16 +13,16 @@ namespace StellarShowcase.Repositories.Interfaces
 
         Task<UserAccountDto> GetUserAccount(Guid id);
 
-        Task CreateTrustline(Guid id, Guid issuerId, Guid assetId, decimal? limit = null);
+        Task CreateTrustline(Guid id, string passphrase, Guid issuerId, Guid assetId, decimal? limit = null);
 
-        Task TransferAsset(Guid id, Guid issuerId, Guid assetId, string recipientAccountId, decimal amount, string memo = "");
+        Task TransferAsset(Guid id, string passphrase, Guid issuerId, Guid assetId, string recipientAccountId, decimal amount, string memo = "");
 
-        Task<Guid> CreateBuyOrder(Guid userAccountId, Guid marketId, decimal volume, decimal price);
+        Task CreateBuyOrder(Guid userAccountId, string passphrase, Guid marketId, decimal volume, decimal price);
 
-        Task<Guid> CreateSellOrder(Guid userAccountId, Guid marketId, decimal volume, decimal price);
+        Task CreateSellOrder(Guid userAccountId, string passphrase, Guid marketId, decimal volume, decimal price);
 
         Task<List<ActiveOrderDto>> GetActiveOrders(Guid userAccountId);
 
-        Task<bool> CancelOrder(Guid userAccountId, long orderId);
+        Task<bool> CancelOrder(Guid userAccountId, string passphrase, long orderId);
     }
 }

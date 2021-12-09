@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 
+import { ComponentBase } from '../../core/component-base';
 import { UserAccountDto } from '../../core/models/dto';
 import { UserAccountService } from '../../core/services/user-account.service';
 
@@ -9,15 +10,16 @@ import { UserAccountService } from '../../core/services/user-account.service';
   templateUrl: './list.component.html',
   styleUrls: ['./list.component.scss']
 })
-export class ListComponent implements OnInit {
+export class ListComponent extends ComponentBase implements OnInit {
 
-  columns = ['fullName', 'fullAddress', 'email', 'phone', 'action']
+  columns = ['fullName', 'fullAddress', 'email', 'phone', 'accountId', 'action']
   userAccounts: UserAccountDto[];
-  isLoading = true;
 
   constructor(
     private userAccountService: UserAccountService,
-    private router: Router) { }
+    private router: Router) {
+    super();
+  }
 
   ngOnInit(): void {
     this.isLoading = true;
@@ -25,7 +27,7 @@ export class ListComponent implements OnInit {
       .getAll()
       .subscribe({
         next: result => this.userAccounts = result,
-        complete: () => setTimeout(() => this.isLoading = false, 600),
+        complete: () => this.stopLoading(),
       });
   }
 

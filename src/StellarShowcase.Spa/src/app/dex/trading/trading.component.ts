@@ -1,12 +1,15 @@
 import { Component, OnInit } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 import { forkJoin } from 'rxjs';
-import { ComponentBase } from '../../core/component-base';
 
+import { ComponentBase } from '../../core/component-base';
+import { DialogCredentials } from '../../core/models/dialog-credentials';
 import { ActiveOrderDto, CreateBuyOrderDto, CreateSellOrderDto, MarketDto, UserAccountDto } from '../../core/models/dto';
 import { DexService } from '../../core/services/dex.service';
 import { UserAccountService } from '../../core/services/user-account.service';
+import { CredentialsDialogComponent } from '../../shared/credentials-dialog/credentials-dialog.component';
 
 @Component({
   selector: 'app-trading',
@@ -29,7 +32,8 @@ export class TradingComponent extends ComponentBase implements OnInit {
     private userAccountService: UserAccountService,
     private dexService: DexService,
     private activatedRoute: ActivatedRoute,
-    private snackBar: MatSnackBar) {
+    private snackBar: MatSnackBar,
+    private dialog: MatDialog) {
     super();
   }
 
@@ -40,6 +44,7 @@ export class TradingComponent extends ComponentBase implements OnInit {
           marketId: params['id'],
           price: null,
           volume: null,
+          passphrase: ''
         };
         this.loadData(params['id']);
       },
@@ -57,9 +62,27 @@ export class TradingComponent extends ComponentBase implements OnInit {
 
     this.isBuy = idx === 0;
   }
+  
+  openDialog() {
+    let passphrase = this.userAccountService.getPassphrase(this.impersonatedUserAccount.id);
+    if (!passphrase) {
+      const dialogRef = this.dialog.open(CredentialsDialogComponent, {
+        data: this.impersonatedUserAccount.id,
+      });
 
-  submit() {
+      dialogRef.afterClosed().subscribe((result: DialogCredentials) => {
+        if (result && result.passphrase) {
+          this.submit(result.passphrase);
+        }
+      });
+    } else {
+      this.submit(passphrase);
+    }
+  }
+
+  private submit(passphrase: string) {
     this.isSubmitting = true;
+    this.model.passphrase = passphrase;
     if (this.isBuy) {
       this.userAccountService
         .createBuyOrder(this.impersonatedUserAccount.id, this.model)

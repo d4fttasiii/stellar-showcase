@@ -23,7 +23,7 @@
                             [(ngModel)]="model.price" />
                     </mat-form-field>
                     <button type="button" [color]="isBuy ? 'accent' : 'warn'" [disabled]="!impersonatedUserAccount"
-                        mat-raised-button (click)="submit()">Submit</button>
+                        mat-raised-button (click)="openDialog()">Submit</button>
                 </div>
                 <div class="mg-t3" *ngIf="userAccountActiveOrders && userAccountActiveOrders.length > 0">
                     <table mat-table [dataSource]="userAccountActiveOrders" class="w-100">
@@ -93,7 +93,7 @@
                             [(ngModel)]="model.price" />
                     </mat-form-field>
                     <button type="button" [color]="isBuy ? 'accent' : 'warn'" [disabled]="!impersonatedUserAccount"
-                        mat-raised-button (click)="submit()">Submit</button>
+                        mat-raised-button (click)="openDialog()">Submit</button>
                 </div>
                 <div class="mg-t3" *ngIf="userAccountActiveOrders && userAccountActiveOrders.length > 0">
                     <table mat-table [dataSource]="userAccountActiveOrders" class="w-100">

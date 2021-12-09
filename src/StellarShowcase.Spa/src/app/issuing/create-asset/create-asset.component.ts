@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 
+import { ComponentBase } from '../../core/component-base';
 import { UpsertAssetDto } from '../../core/models/dto';
 import { IssuerService } from '../../core/services/issuer.service';
 
@@ -10,17 +11,16 @@ import { IssuerService } from '../../core/services/issuer.service';
   templateUrl: './create-asset.component.html',
   styleUrls: ['./create-asset.component.scss']
 })
-export class CreateAssetComponent implements OnInit {
+export class CreateAssetComponent extends ComponentBase implements OnInit {
 
   issuerId: string;
   model: UpsertAssetDto;
-  isLoading = true;
 
   constructor(
     private issuerService: IssuerService,
     private activatedRoute: ActivatedRoute,
     private snackBar: MatSnackBar,
-    private router: Router) { }
+    private router: Router) { super(); }
 
   ngOnInit(): void {
     this.activatedRoute.params.subscribe(params => {
@@ -34,20 +34,25 @@ export class CreateAssetComponent implements OnInit {
         isClawbackEnabled: false,
       };
     });
-    setTimeout(() => this.isLoading = false, 600);
+    this.stopLoading();
   }
 
   submit() {
+    this.isSubmitting = true;
     this.issuerService
       .createAsset(this.issuerId, this.model)
-      .subscribe(() => {
-        this.snackBar.open(`Asset: ${this.model.unitName} created!`, 'OK', {
-          duration: 5000,
-          horizontalPosition: 'center',
-          verticalPosition: 'bottom',
-          politeness: 'polite',
-        });
-        this.router.navigate(['issuing']);
+      .subscribe({
+        next: () => {
+          this.snackBar.open(`Asset: ${this.model.unitName} created!`, 'OK', {
+            duration: 5000,
+            horizontalPosition: 'center',
+            verticalPosition: 'bottom',
+            politeness: 'polite',
+          });
+          this.router.navigate(['issuing']);
+        },
+        complete: () =>
+          this.stopSubmitting(),
       });
   }
 }

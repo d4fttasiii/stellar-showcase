@@ -9,7 +9,6 @@ namespace StellarShowcase.DataAccess.Database
         DbSet<UserAccountEntity> UserAccount { get; }
         DbSet<IssuerEntity> Issuer { get; }
         DbSet<AssetEntity> Asset { get; }
-        DbSet<OrderEntity> Order { get; }
         DbSet<MarketEntity> Market { get; }
 
         Task Save();

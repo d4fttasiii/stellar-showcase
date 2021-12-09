@@ -48,7 +48,7 @@ namespace StellarShowcase.Repositories.Implementations
             foreach (var m in markets)
             {
                 var orderbook = await _stellarClient.GetOrderBook(m.Base, m.Quote);
-                m.Price = orderbook.Sells.Min(s => s.Price);
+                m.Price = orderbook.Sells.Any() ? orderbook.Sells.Min(s => s.Price) : 0m;
             }
 
             return markets;

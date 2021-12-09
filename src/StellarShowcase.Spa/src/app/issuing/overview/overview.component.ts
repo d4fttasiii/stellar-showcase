@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 
+import { ComponentBase } from '../../core/component-base';
 import { IssuerDto } from '../../core/models/dto';
 import { IssuerService } from '../../core/services/issuer.service';
 
@@ -14,31 +15,38 @@ interface IssuerDtoEx extends IssuerDto {
   templateUrl: './overview.component.html',
   styleUrls: ['./overview.component.scss']
 })
-export class OverviewComponent implements OnInit {
+export class OverviewComponent extends ComponentBase implements OnInit {
 
-  isLoading = true;
   issuers: IssuerDtoEx[];
   columns = ['nr', 'issuerAccountId', 'distributorAccountId', 'action'];
 
   constructor(
     private issuerService: IssuerService,
     private snackBar: MatSnackBar,
-    private router: Router) { }
+    private router: Router) {
+    super();
+  }
 
   ngOnInit(): void {
     this.loadData();
   }
 
   createIssuer(): void {
-    this.issuerService.create().subscribe(() => {
-      this.snackBar.open('Issuer created!', 'OK', {
-        duration: 5000,
-        horizontalPosition: 'center',
-        verticalPosition: 'bottom',
-        politeness: 'polite',
+    this.isSubmitting = true;
+    this.issuerService
+      .create()
+      .subscribe({
+        next: () => {
+          this.snackBar.open('Issuer created!', 'OK', {
+            duration: 5000,
+            horizontalPosition: 'center',
+            verticalPosition: 'bottom',
+            politeness: 'polite',
+          });
+          this.loadData();
+        },
+        complete: () => this.stopSubmitting(),
       });
-      this.loadData();
-    });
   }
 
   goToDetails(id: string) {
@@ -59,7 +67,7 @@ export class OverviewComponent implements OnInit {
             this.issuers.push(issuer);
           });
         },
-        complete: () => setTimeout(() => this.isLoading = false, 600),
+        complete: () => this.stopLoading(),
       });
   }
 

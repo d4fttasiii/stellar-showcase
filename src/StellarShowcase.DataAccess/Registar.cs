@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using StellarShowcase.DataAccess.Blockchain;
 using StellarShowcase.DataAccess.Database;
+using StellarShowcase.DataAccess.Security;
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("StellarShowcase.Repositories")]
@@ -12,6 +13,7 @@ namespace StellarShowcase.DataAccess
         public static IServiceCollection AddDataAccess(this IServiceCollection services)
         {
             services.AddScoped<IStellarClient, StellarClient>();
+            services.AddScoped<IEncryptor, Encryptor>();
             services.AddDatabase();
 
             return services;

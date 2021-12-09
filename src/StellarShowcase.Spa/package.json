@@ -23,6 +23,7 @@
     "@fortawesome/fontawesome-free": "^5.15.4",
     "animate.css": "^4.1.1",
     "echarts": "^5.2.2",
+    "localstorage-slim": "^2.2.0",
     "ngx-echarts": "^8.0.1",
     "rxjs": "~7.4.0",
     "tslib": "^2.3.0",

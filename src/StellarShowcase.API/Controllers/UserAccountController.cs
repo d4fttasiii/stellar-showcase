@@ -52,9 +52,10 @@ namespace StellarShowcase.API.Controllers
         public async Task<ActionResult<Guid>> CreateTrustline(
             [FromRoute] Guid id,
             [FromRoute] Guid assetId,
-            [FromRoute] Guid issuerId)
+            [FromRoute] Guid issuerId,
+            [FromBody] CredentialsDto credentials)
         {
-            return await HandleRequest(async () => await _userAccountRepository.CreateTrustline(id, issuerId, assetId));
+            return await HandleRequest(async () => await _userAccountRepository.CreateTrustline(id, credentials.Passphrase, issuerId, assetId));
         }
 
         [HttpGet, Route("{id}/orders")]
@@ -64,21 +65,21 @@ namespace StellarShowcase.API.Controllers
         }
 
         [HttpPost, Route("{id}/orders/buy")]
-        public async Task<ActionResult<Guid>> CreateBuyOrder([FromRoute] Guid id, [FromBody] CreateBuyOrderDto data)
+        public async Task<ActionResult> CreateBuyOrder([FromRoute] Guid id, [FromBody] CreateBuyOrderDto data)
         {
-            return await HandleRequest(async () => await _userAccountRepository.CreateBuyOrder(id, data.MarketId, data.Volume, data.Price));
+            return await HandleRequest(async () => await _userAccountRepository.CreateBuyOrder(id, data.Passphrase, data.MarketId, data.Volume, data.Price));
         }
 
         [HttpPost, Route("{id}/orders/sell")]
-        public async Task<ActionResult<Guid>> CreateSellOrder([FromRoute] Guid id, [FromBody] CreateSellOrderDto data)
+        public async Task<ActionResult> CreateSellOrder([FromRoute] Guid id, [FromBody] CreateSellOrderDto data)
         {
-            return await HandleRequest(async () => await _userAccountRepository.CreateSellOrder(id, data.MarketId, data.Volume, data.Price));
+            return await HandleRequest(async () => await _userAccountRepository.CreateSellOrder(id, data.Passphrase, data.MarketId, data.Volume, data.Price));
         }
 
         [HttpDelete, Route("{id}/orders/{orderId}/cancel")]
-        public async Task<ActionResult<bool>> CancelOrder([FromRoute] Guid id, [FromRoute] long orderId)
+        public async Task<ActionResult<bool>> CancelOrder([FromRoute] Guid id, [FromRoute] long orderId, [FromBody] CredentialsDto credentials)
         {
-            return await HandleRequest(async () => await _userAccountRepository.CancelOrder(id, orderId));
+            return await HandleRequest(async () => await _userAccountRepository.CancelOrder(id, credentials.Passphrase, orderId));
         } 
     }
 }

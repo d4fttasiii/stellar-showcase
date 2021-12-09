@@ -274,6 +274,7 @@ namespace StellarShowcase.DataAccess.Blockchain
             return new TransactionBuilder(account)
                .AddOperation(buyOfferOp)
                .AddTimeBounds(GetTimeBounds())
+               .SetFee(1_000_000)
                .Build()
                .ToUnsignedEnvelopeXdrBase64();
         }
@@ -294,6 +295,7 @@ namespace StellarShowcase.DataAccess.Blockchain
             return new TransactionBuilder(account)
                .AddOperation(sellOfferOp)
                .AddTimeBounds(GetTimeBounds())
+               .SetFee(1_000_000)
                .Build()
                .ToUnsignedEnvelopeXdrBase64();
         }
@@ -317,6 +319,7 @@ namespace StellarShowcase.DataAccess.Blockchain
             return new TransactionBuilder(account)
                .AddOperation(sellOfferOp)
                .AddTimeBounds(GetTimeBounds())
+               .SetFee(1_000_000)
                .Build()
                .ToUnsignedEnvelopeXdrBase64();
         }
@@ -337,6 +340,7 @@ namespace StellarShowcase.DataAccess.Blockchain
             return new TransactionBuilder(account)
                .AddOperation(sellOfferOp)
                .AddTimeBounds(GetTimeBounds())
+               .SetFee(1_000_000)
                .Build()
                .ToUnsignedEnvelopeXdrBase64();
         }

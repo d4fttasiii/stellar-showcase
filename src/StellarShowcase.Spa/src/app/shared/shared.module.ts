@@ -20,12 +20,13 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { ContainerComponent } from './container/container.component';
 import { MenuItemComponent } from './menu-item/menu-item.component';
 import { MenuComponent } from './menu/menu.component';
+import { CredentialsDialogComponent } from './credentials-dialog/credentials-dialog.component';
 
 // import { MatSortModule } from '@angular/material/sort';
 // import { MatChipsModule } from '@angular/material/chips';
 // import { MatNativeDateModule } from '@angular/material/core';
 // import { MatDatepickerModule } from '@angular/material/datepicker';
-// import { MatDialogModule } from '@angular/material/dialog';
+import { MatDialogModule } from '@angular/material/dialog';
 // import { MatDividerModule } from '@angular/material/divider';
 // import { MatExpansionModule } from '@angular/material/expansion';
 // import { MatGridListModule } from '@angular/material/grid-list';
@@ -55,7 +56,7 @@ const MAT_MODULES = [
   MatTabsModule,
   MatSelectModule,
   MatSnackBarModule,
-  // MatDialogModule,
+  MatDialogModule,
   // MatGridListModule,
   // MatPaginatorModule,
   MatCheckboxModule,
@@ -70,11 +71,12 @@ const EXPORTS = [
   MenuComponent,
   MenuItemComponent,
   ContainerComponent,
+  CredentialsDialogComponent,
 ];
 
 
 @NgModule({
-  declarations: [...EXPORTS, ContainerComponent],
+  declarations: [...EXPORTS],
   imports: [CommonModule, FormsModule, ...MAT_MODULES],
   exports: [FormsModule, ...EXPORTS, ...MAT_MODULES],
 })

@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { ComponentBase } from 'src/app/core/component-base';
 
 import { IssuerDto } from '../../core/models/dto';
 import { IssuerService } from '../../core/services/issuer.service';
@@ -9,15 +10,16 @@ import { IssuerService } from '../../core/services/issuer.service';
   templateUrl: './details.component.html',
   styleUrls: ['./details.component.scss']
 })
-export class DetailsComponent implements OnInit {
+export class DetailsComponent extends ComponentBase implements OnInit {
 
   issuer: IssuerDto;
-  isLoading = true;
 
   constructor(
     private issuerService: IssuerService,
     private activatedRoute: ActivatedRoute,
-    private router: Router) { }
+    private router: Router) {
+      super();
+  }
 
   ngOnInit(): void {
     this.activatedRoute.params
@@ -41,7 +43,7 @@ export class DetailsComponent implements OnInit {
         next: result => {
           this.issuer = result;
         },
-        complete: () => setTimeout(() => this.isLoading = false, 600),
+        complete: () => this.stopLoading(),
       });
   }
 
