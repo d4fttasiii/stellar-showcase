@@ -1,7 +1,8 @@
-<app-container icon="fa-address-card" title="User: {{ userAccount.fullName }}" backUrl="/user" [isLoading]="isLoading">
+<app-container icon="fa-address-card" title="User details" backUrl="/user" [isLoading]="isLoading">
     <div class="w-100 mg-b5">
         <button type="button" mat-raised-button color="accent" (click)="goToAddAsset()">Add asset</button>
     </div>
     <hr />
+    <h1>{{ userAccount.fullName }}</h1>
     <pre>{{userAccount | json}}</pre>
 </app-container>

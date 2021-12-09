@@ -123,19 +123,19 @@ export class TradingComponent extends ComponentBase implements OnInit {
 
   cancelOrder(orderId: number) {
     this.isSubmitting = true;
-    this.userAccountService
-      .cancelOrder(this.impersonatedUserAccount.id, orderId)
-      .subscribe({
-        next: () => {
-          this.snackBar.open(`Order ${orderId} cancelled!`, 'OK', {
-            duration: 5000,
-            horizontalPosition: 'center',
-            verticalPosition: 'bottom',
-            politeness: 'polite',
-          });
-        },
-        complete: () => this.stopSubmitting(),
-      });
+    // this.userAccountService
+    //   .cancelOrder(this.impersonatedUserAccount.id, orderId)
+    //   .subscribe({
+    //     next: () => {
+    //       this.snackBar.open(`Order ${orderId} cancelled!`, 'OK', {
+    //         duration: 5000,
+    //         horizontalPosition: 'center',
+    //         verticalPosition: 'bottom',
+    //         politeness: 'polite',
+    //       });
+    //     },
+    //     complete: () => this.stopSubmitting(),
+    //   });
   }
 
   private loadData(id: string) {

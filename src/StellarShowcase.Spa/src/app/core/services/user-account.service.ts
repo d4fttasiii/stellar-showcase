@@ -49,8 +49,8 @@ export class UserAccountService {
     return this.api.get<ActiveOrderDto[]>(`${this.controllerName}/${id}/orders`);
   }
 
-  cancelOrder(id: string, orderId: number): Observable<boolean> {
-    return this.api.delete<boolean>(`${this.controllerName}/${id}/orders/${orderId}/cancel`);
+  cancelOrder(id: string, orderId: number, credentials: CredentialsDto): Observable<boolean> {
+    return this.api.delete(`${this.controllerName}/${id}/orders/${orderId}/cancel`, credentials);
   }
 
   storePassphrase(id: string, passphrase: string) {

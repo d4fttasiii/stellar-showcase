@@ -5,3 +5,10 @@
 .title-spacer {
     flex: 1 1 auto;
 }
+
+.toolbar {
+    min-height: 65px;
+    mat-toolbar {
+        min-height: 65px;
+    }
+}

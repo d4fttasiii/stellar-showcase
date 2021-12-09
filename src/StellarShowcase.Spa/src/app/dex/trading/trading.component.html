@@ -1,6 +1,9 @@
-<app-container title="Trading: {{ market.name }}" icon="fa-exchange-alt" backUrl="/dex" [isLoading]="isLoading"
+<app-container title="Trading" icon="fa-exchange-alt" backUrl="/dex" [isLoading]="isLoading"
     [isSubmitting]="isSubmitting">
     <div class="pd-5">
+        <div class="m-b3">
+            <h3>{{ market.name }}</h3>
+        </div>
         <mat-tab-group (selectedIndexChange)="toggle($event)">
             <mat-tab label="Buy order">
                 <div>

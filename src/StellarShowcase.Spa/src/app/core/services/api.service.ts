@@ -30,15 +30,16 @@ export class ApiService {
       );
   }
 
-  delete<TResponse>(
+  delete<TPost, TResponse>(
     path: string,
+    toPost: TPost,
     showLoading: boolean = true,
   ): Observable<TResponse> {
     if (showLoading) {
     }
 
     return this.http
-      .delete(`${this.baseUrl}/${path}`)
+      .delete(`${this.baseUrl}/${path}`, toPost)
       .pipe(
         this.successHandler<TResponse>(showLoading),
         this.errorHandler<TResponse>(showLoading)
