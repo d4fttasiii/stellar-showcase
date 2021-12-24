@@ -28,15 +28,19 @@ namespace StellarShowcase.DataAccess.Blockchain
 
         Task<string> BuildClawbackRawTransaction(AssetDto asset, decimal amount, string fromAccountId);
 
+        Task<string> BuildBuyOrderRawTransaction(string accountId, AssetDto sellingAsset, AssetDto buyingAsset, decimal amount, decimal price);
+
+        Task<string> BuildCancelSellOrderRawTransaction(string accountId, long orderId, AssetDto sellingAsset, AssetDto buyingAsset);
+
+        Task<string> BuildSellOrderRawTransaction(string accountId, AssetDto sellingAsset, AssetDto buyingAsset, decimal amount, decimal price);
+
+        Task<string> BuildCancelBuyOrderRawTransaction(string accountId, long orderId, AssetDto sellingAsset, AssetDto buyingAsset);
+
+        Task<string> BuildCreateLiquidityPoolRawTransaction(string accountId, AssetDto assetA, AssetDto assetB);
+
+        Task<LiquidityPoolDto> GetLiquidityPool(AssetDto assetA, AssetDto assetB);
+
         Task<string> SignSubmitRawTransaction(string privateKey, string txRaw);
-
-        Task<string> CreateBuyOrderRawTransaction(string accountId, AssetDto sellingAsset, AssetDto buyingAsset, decimal amount, decimal price);
-
-        Task<string> CreateCancelSellOrderRawTransaction(string accountId, long orderId, AssetDto sellingAsset, AssetDto buyingAsset);
-
-        Task<string> CreateSellOrderRawTransaction(string accountId, AssetDto sellingAsset, AssetDto buyingAsset, decimal amount, decimal price);
-
-        Task<string> CreateCancelBuyOrderRawTransaction(string accountId, long orderId, AssetDto sellingAsset, AssetDto buyingAsset);
 
         Task<OrderBookDto> GetOrderBook(AssetDto baseAsset, AssetDto quoteAsset);
 

@@ -255,7 +255,7 @@ namespace StellarShowcase.DataAccess.Blockchain
             return result.Hash;
         }
 
-        public async Task<string> CreateBuyOrderRawTransaction(string accountId, AssetDto sellingAsset, AssetDto buyingAsset, decimal amount, decimal price)
+        public async Task<string> BuildBuyOrderRawTransaction(string accountId, AssetDto sellingAsset, AssetDto buyingAsset, decimal amount, decimal price)
         {
             using var server = GetServer();
 
@@ -279,7 +279,7 @@ namespace StellarShowcase.DataAccess.Blockchain
                .ToUnsignedEnvelopeXdrBase64();
         }
 
-        public async Task<string> CreateCancelBuyOrderRawTransaction(string accountId, long orderId, AssetDto sellingAsset, AssetDto buyingAsset)
+        public async Task<string> BuildCancelBuyOrderRawTransaction(string accountId, long orderId, AssetDto sellingAsset, AssetDto buyingAsset)
         {
             using var server = GetServer();
 
@@ -300,7 +300,7 @@ namespace StellarShowcase.DataAccess.Blockchain
                .ToUnsignedEnvelopeXdrBase64();
         }
 
-        public async Task<string> CreateSellOrderRawTransaction(string accountId, AssetDto sellingAsset, AssetDto buyingAsset, decimal amount, decimal price)
+        public async Task<string> BuildSellOrderRawTransaction(string accountId, AssetDto sellingAsset, AssetDto buyingAsset, decimal amount, decimal price)
         {
             using var server = GetServer();
 
@@ -324,7 +324,7 @@ namespace StellarShowcase.DataAccess.Blockchain
                .ToUnsignedEnvelopeXdrBase64();
         }
 
-        public async Task<string> CreateCancelSellOrderRawTransaction(string accountId, long orderId, AssetDto sellingAsset, AssetDto buyingAsset)
+        public async Task<string> BuildCancelSellOrderRawTransaction(string accountId, long orderId, AssetDto sellingAsset, AssetDto buyingAsset)
         {
             using var server = GetServer();
 
@@ -387,6 +387,61 @@ namespace StellarShowcase.DataAccess.Blockchain
             });
 
             return result.ToList();
+        }
+
+        public async Task<LiquidityPoolDto> GetLiquidityPool(AssetDto assetA, AssetDto assetB)
+        {
+            using var server = GetServer();
+
+            var lpp = LiquidityPoolParameters.Create(
+                stellar_dotnet_sdk.xdr.LiquidityPoolType.LiquidityPoolTypeEnum.LIQUIDITY_POOL_CONSTANT_PRODUCT,
+                new AssetTypeCreditAlphaNum4(assetA.UnitName, assetA.IssuerAccountId),
+                new AssetTypeCreditAlphaNum4(assetB.UnitName, assetB.IssuerAccountId),
+                LiquidityPoolParameters.Fee);
+
+            try
+            {
+                var lp = await server.LiquidityPools.LiquidityPool(lpp.GetID());
+
+                return new LiquidityPoolDto
+                {
+                    Id = lp.ID.ToString(),
+                    Reserves = lp.Reserves.Select(r => new LiquidityPoolReserveDto
+                    {
+                        Amount = decimal.Parse(r.Amount, NumberStyles.Float, CultureInfo.InvariantCulture),
+                        UnitName = r.Asset.CanonicalName(),
+                    }).ToList(),
+                    TotalTrustlines = lp.TotalTrustlines,
+                    TotalShares = lp.TotalShares,
+                };
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        public async Task<string> BuildCreateLiquidityPoolRawTransaction(string accountId, AssetDto assetA, AssetDto assetB)
+        {
+            using var server = GetServer();
+
+            var account = await server.Accounts.Account(accountId);
+            var lpp = LiquidityPoolParameters.Create(
+                stellar_dotnet_sdk.xdr.LiquidityPoolType.LiquidityPoolTypeEnum.LIQUIDITY_POOL_CONSTANT_PRODUCT,
+                new AssetTypeCreditAlphaNum4(assetA.UnitName, assetA.IssuerAccountId),
+                new AssetTypeCreditAlphaNum4(assetB.UnitName, assetB.IssuerAccountId),
+                LiquidityPoolParameters.Fee);
+
+            var changeTrustOp = new ChangeTrustOperation.Builder(ChangeTrustAsset.Create(lpp))
+               .SetSourceAccount(account.KeyPair)
+               .Build();
+
+            return new TransactionBuilder(account)
+              .AddOperation(changeTrustOp)
+              .AddTimeBounds(GetTimeBounds())
+              .SetFee(1_000_000)
+              .Build()
+              .ToUnsignedEnvelopeXdrBase64();
         }
 
         private Server GetServer()

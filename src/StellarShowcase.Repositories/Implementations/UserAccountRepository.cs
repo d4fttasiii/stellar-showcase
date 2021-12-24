@@ -137,7 +137,7 @@ namespace StellarShowcase.Repositories.Implementations
             var accountMnemonic = _encryptor.DecryptToString(account.Mnemonic, passphrase);
             var accountKeyPair = _stellarClient.DeriveKeyPair(accountMnemonic, 0);
 
-            var orderTx = await _stellarClient.CreateSellOrderRawTransaction(accountKeyPair.AccountId,
+            var orderTx = await _stellarClient.BuildSellOrderRawTransaction(accountKeyPair.AccountId,
                 new AssetDto { IssuerAccountId = sellAsset.IssuerAccountId, UnitName = sellAsset.UnitName },
                 new AssetDto { IssuerAccountId = buyAsset.IssuerAccountId, UnitName = buyAsset.UnitName },
                 volume, price);
@@ -155,7 +155,7 @@ namespace StellarShowcase.Repositories.Implementations
             var accountMnemonic = _encryptor.DecryptToString(account.Mnemonic, passphrase);
             var accountKeyPair = _stellarClient.DeriveKeyPair(accountMnemonic, 0);
 
-            var orderTx = await _stellarClient.CreateBuyOrderRawTransaction(accountKeyPair.AccountId,
+            var orderTx = await _stellarClient.BuildBuyOrderRawTransaction(accountKeyPair.AccountId,
                 new AssetDto { IssuerAccountId = sellAsset.IssuerAccountId, UnitName = sellAsset.UnitName },
                 new AssetDto { IssuerAccountId = buyAsset.IssuerAccountId, UnitName = buyAsset.UnitName },
                 volume, price);
@@ -182,8 +182,8 @@ namespace StellarShowcase.Repositories.Implementations
                 throw new ArgumentException($"Unable to find order: ${orderId}");
 
             var cancelOrderTx = await IsBuy(orderToCancel) ?
-                await _stellarClient.CreateCancelBuyOrderRawTransaction(accountKeyPair.AccountId, orderId, orderToCancel.Selling, orderToCancel.Buying) :
-                await _stellarClient.CreateCancelSellOrderRawTransaction(accountKeyPair.AccountId, orderId, orderToCancel.Selling, orderToCancel.Buying);
+                await _stellarClient.BuildCancelBuyOrderRawTransaction(accountKeyPair.AccountId, orderId, orderToCancel.Selling, orderToCancel.Buying) :
+                await _stellarClient.BuildCancelSellOrderRawTransaction(accountKeyPair.AccountId, orderId, orderToCancel.Selling, orderToCancel.Buying);
 
             var txId = await _stellarClient.SignSubmitRawTransaction(accountKeyPair.PrivateKey, cancelOrderTx);
 
