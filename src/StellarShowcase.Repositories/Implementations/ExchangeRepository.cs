@@ -49,6 +49,7 @@ namespace StellarShowcase.Repositories.Implementations
             {
                 var orderbook = await _stellarClient.GetOrderBook(m.Base, m.Quote);
                 m.Price = orderbook.Sells.Any() ? orderbook.Sells.Min(s => s.Price) : 0m;
+                m.LiquidityPool = await GetLiquidityPool(m.Id);
             }
 
             return markets;
@@ -106,6 +107,69 @@ namespace StellarShowcase.Repositories.Implementations
             await _dbContext.Save();
 
             return market.Id;
+        }
+
+        public async Task<List<LiquidityPoolDto>> GetLiquidityPools()
+        {
+            var markets = await(from m in _dbContext.Market
+                               join b in _dbContext.Asset on m.BaseAssetId equals b.Id
+                               join q in _dbContext.Asset on m.QuoteAssetId equals q.Id
+                               select new MarketDto
+                               {
+                                   Id = m.Id,
+                                   Name = m.Name,
+                                   Base = new AssetDto
+                                   {
+                                       IssuerAccountId = b.IssuerAccountId,
+                                       TotalSupply = b.TotalSupply,
+                                       UnitName = b.UnitName,
+                                   },
+                                   Quote = new AssetDto
+                                   {
+                                       IssuerAccountId = q.IssuerAccountId,
+                                       TotalSupply = q.TotalSupply,
+                                       UnitName = q.UnitName,
+                                   },
+                               }).ToListAsync();
+
+            var pools = new List<LiquidityPoolDto>();
+
+            foreach (var market in markets)
+            {
+                var liquidityPool = await _stellarClient.GetLiquidityPool(market.Base, market.Quote);
+                pools.Add(liquidityPool);
+            }
+
+            return pools;
+        }
+
+        public async Task<LiquidityPoolDto> GetLiquidityPool(Guid marketId)
+        {
+            var market = await(from m in _dbContext.Market
+                               join b in _dbContext.Asset on m.BaseAssetId equals b.Id
+                               join q in _dbContext.Asset on m.QuoteAssetId equals q.Id
+                               where m.Id == marketId
+                               select new MarketDto
+                               {
+                                   Id = m.Id,
+                                   Name = m.Name,
+                                   Base = new AssetDto
+                                   {
+                                       IssuerAccountId = b.IssuerAccountId,
+                                       TotalSupply = b.TotalSupply,
+                                       UnitName = b.UnitName,
+                                   },
+                                   Quote = new AssetDto
+                                   {
+                                       IssuerAccountId = q.IssuerAccountId,
+                                       TotalSupply = q.TotalSupply,
+                                       UnitName = q.UnitName,
+                                   },
+                               }).FirstOrDefaultAsync();
+
+            var liquidityPool = await _stellarClient.GetLiquidityPool(market.Base, market.Quote);
+
+            return liquidityPool;
         }
 
         private async Task<OrderBookDto> GetOrderBook(AssetDto baseAsset, AssetDto quoteAsset)

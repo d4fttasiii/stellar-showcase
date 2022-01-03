@@ -38,7 +38,13 @@ namespace StellarShowcase.DataAccess.Blockchain
 
         Task<string> BuildCreateLiquidityPoolRawTransaction(string accountId, AssetDto assetA, AssetDto assetB);
 
+        Task<List<LiquidityPoolDto>> GetLiquidityPools(IEnumerable<AssetDto> assets);
+
         Task<LiquidityPoolDto> GetLiquidityPool(AssetDto assetA, AssetDto assetB);
+
+        Task<decimal> GetStrictSendPaymentPaths(string liquidityPool, decimal amount = 1m);
+
+        Task<decimal> GetStrictReceivePaymentPaths(string liquidityPoolId, decimal amount = 1m);
 
         Task<string> SignSubmitRawTransaction(string privateKey, string txRaw);
 

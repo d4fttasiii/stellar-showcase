@@ -345,6 +345,28 @@ namespace StellarShowcase.DataAccess.Blockchain
                .ToUnsignedEnvelopeXdrBase64();
         }
 
+        public async Task<string> BuildSwapBuyRawTransaction(string accountId, AssetDto sendAsset, AssetDto destAsset, decimal amount, decimal minReceive)
+        {
+            using var server = GetServer();
+
+            var account = await server.Accounts.Account(accountId);
+            var send = Asset.CreateNonNativeAsset(sendAsset.UnitName, sendAsset.IssuerAccountId);
+            var dest = Asset.CreateNonNativeAsset(destAsset.UnitName, destAsset.IssuerAccountId);
+            var adjustedSendAmount = amount.ToString("N7", CultureInfo.InvariantCulture);
+            var adjustedMinReceive = minReceive.ToString("N7", CultureInfo.InvariantCulture);
+
+            var buyOp = new PathPaymentStrictSendOperation.Builder(send, adjustedSendAmount, account.KeyPair, dest, adjustedMinReceive)
+                .SetSourceAccount(account.KeyPair)
+                .Build();
+
+            return new TransactionBuilder(account)
+               .AddOperation(buyOp)
+               .AddTimeBounds(GetTimeBounds())
+               .SetFee(1_000_000)
+               .Build()
+               .ToUnsignedEnvelopeXdrBase64();
+        }
+
         public async Task<OrderBookDto> GetOrderBook(AssetDto selling, AssetDto buying)
         {
             using var server = GetServer();
@@ -389,6 +411,34 @@ namespace StellarShowcase.DataAccess.Blockchain
             return result.ToList();
         }
 
+        public async Task<List<LiquidityPoolDto>> GetLiquidityPools(IEnumerable<AssetDto> assets)
+        {
+            using var server = GetServer();
+
+            var q = server.LiquidityPools;
+            if (assets.Any())
+            {
+                var reserves = assets.Select(a => $"{a.UnitName}:{a.IssuerAccountId}").ToArray();
+                q.ForReserves(reserves);
+            }
+
+            var pools = await q.Execute();
+
+            return pools.Records.Select(r => new LiquidityPoolDto
+            {
+                Id = r.ID.ToString(),
+                Reserves = r.Reserves.Select(reserve => new LiquidityPoolReserveDto
+                {
+                    Amount = decimal.Parse(reserve.Amount, NumberStyles.Float, CultureInfo.InvariantCulture),
+                    UnitName = reserve.Asset.CanonicalName().Split(':')[0],
+                    IssuerAccountId = reserve.Asset.CanonicalName().Split(':')[1],
+                }).ToList(),
+                TotalTrustlines = r.TotalTrustlines,
+                TotalShares = r.TotalShares,
+
+            }).ToList();
+        }
+
         public async Task<LiquidityPoolDto> GetLiquidityPool(AssetDto assetA, AssetDto assetB)
         {
             using var server = GetServer();
@@ -409,7 +459,8 @@ namespace StellarShowcase.DataAccess.Blockchain
                     Reserves = lp.Reserves.Select(r => new LiquidityPoolReserveDto
                     {
                         Amount = decimal.Parse(r.Amount, NumberStyles.Float, CultureInfo.InvariantCulture),
-                        UnitName = r.Asset.CanonicalName(),
+                        UnitName = r.Asset.CanonicalName().Split(':')[0],
+                        IssuerAccountId = r.Asset.CanonicalName().Split(':')[1],
                     }).ToList(),
                     TotalTrustlines = lp.TotalTrustlines,
                     TotalShares = lp.TotalShares,
@@ -442,6 +493,38 @@ namespace StellarShowcase.DataAccess.Blockchain
               .SetFee(1_000_000)
               .Build()
               .ToUnsignedEnvelopeXdrBase64();
+        }
+
+        public async Task<decimal> GetStrictSendPaymentPaths(string liquidityPoolId, decimal amount = 1m)
+        {
+            using var server = GetServer();
+
+            var lp = await server.LiquidityPools.LiquidityPool(liquidityPoolId);
+            var result = await server.PathStrictSend
+                .SourceAmount(amount.ToString("N7", CultureInfo.InvariantCulture))
+                .SourceAsset(lp.Reserves[0].Asset)
+                .DestinationAssets(new[] { lp.Reserves[1].Asset })
+                .Execute();
+
+            var price = result.Records.FirstOrDefault()?.DestinationAmount;
+
+            return decimal.Parse(price, NumberStyles.Float, CultureInfo.InvariantCulture);
+        }
+
+        public async Task<decimal> GetStrictReceivePaymentPaths(string liquidityPoolId, decimal amount = 1m)
+        {
+            using var server = GetServer();
+
+            var lp = await server.LiquidityPools.LiquidityPool(liquidityPoolId);
+            var result = await server.PathStrictReceive
+                .SourceAssets(new [] { lp.Reserves[1].Asset })
+                .DestinationAsset(lp.Reserves[0].Asset)
+                .DestinationAmount(amount.ToString("N7", CultureInfo.InvariantCulture))
+                .Execute();
+
+            var price = result.Records.FirstOrDefault()?.SourceAmount;
+
+            return decimal.Parse(price, NumberStyles.Float, CultureInfo.InvariantCulture);
         }
 
         private Server GetServer()

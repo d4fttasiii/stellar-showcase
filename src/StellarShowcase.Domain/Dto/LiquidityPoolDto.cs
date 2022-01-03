@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace StellarShowcase.Domain.Dto
 {
@@ -12,11 +8,13 @@ namespace StellarShowcase.Domain.Dto
         public string TotalTrustlines { get; set; }
         public string TotalShares { get; set; }
         public List<LiquidityPoolReserveDto> Reserves { get; set; }
+        public decimal? Price { get; set; }
     }
 
     public class LiquidityPoolReserveDto
     {
         public decimal Amount { get; set; }
         public string UnitName { get; set; }
+        public string IssuerAccountId { get; set; }
     }
 }

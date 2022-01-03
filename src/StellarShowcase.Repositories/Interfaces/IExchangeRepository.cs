@@ -12,5 +12,9 @@ namespace StellarShowcase.Repositories.Interfaces
         Task<MarketDto> GetMarket(Guid marketId);
 
         Task<Guid> CreateMarket(Guid baseAssetId, Guid quoteAssetId, string name);
+
+        Task<List<LiquidityPoolDto>> GetLiquidityPools();
+
+        Task<LiquidityPoolDto> GetLiquidityPool(Guid marketId);
     }
 }
