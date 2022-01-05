@@ -57,28 +57,7 @@ namespace StellarShowcase.Repositories.Implementations
 
         public async Task<MarketDto> GetMarket(Guid marketId)
         {
-            var market = await (from m in _dbContext.Market
-                                join b in _dbContext.Asset on m.BaseAssetId equals b.Id
-                                join q in _dbContext.Asset on m.QuoteAssetId equals q.Id
-                                where m.Id == marketId
-                                select new MarketDto
-                                {
-                                    Id = m.Id,
-                                    Name = m.Name,
-                                    Base = new AssetDto
-                                    {
-                                        IssuerAccountId = b.IssuerAccountId,
-                                        TotalSupply = b.TotalSupply,
-                                        UnitName = b.UnitName,
-                                    },
-                                    Quote = new AssetDto
-                                    {
-                                        IssuerAccountId = q.IssuerAccountId,
-                                        TotalSupply = q.TotalSupply,
-                                        UnitName = q.UnitName,
-                                    },
-                                }).FirstOrDefaultAsync();
-
+            var market = await GetMarketDto(marketId);
             market.OrderBooks = await GetOrderBook(market.Base, market.Quote);
 
             return market;
@@ -145,31 +124,20 @@ namespace StellarShowcase.Repositories.Implementations
 
         public async Task<LiquidityPoolDto> GetLiquidityPool(Guid marketId)
         {
-            var market = await(from m in _dbContext.Market
-                               join b in _dbContext.Asset on m.BaseAssetId equals b.Id
-                               join q in _dbContext.Asset on m.QuoteAssetId equals q.Id
-                               where m.Id == marketId
-                               select new MarketDto
-                               {
-                                   Id = m.Id,
-                                   Name = m.Name,
-                                   Base = new AssetDto
-                                   {
-                                       IssuerAccountId = b.IssuerAccountId,
-                                       TotalSupply = b.TotalSupply,
-                                       UnitName = b.UnitName,
-                                   },
-                                   Quote = new AssetDto
-                                   {
-                                       IssuerAccountId = q.IssuerAccountId,
-                                       TotalSupply = q.TotalSupply,
-                                       UnitName = q.UnitName,
-                                   },
-                               }).FirstOrDefaultAsync();
-
+            var market = await GetMarketDto(marketId);
             var liquidityPool = await _stellarClient.GetLiquidityPool(market.Base, market.Quote);
 
             return liquidityPool;
+        }
+
+
+        public async Task CreateLiquidityPool(Guid marketId, Guid issuerAccountId)
+        {
+            var market = await GetMarketDto(marketId);
+            var issuer = await _dbContext.Issuer.FirstOrDefaultAsync(i => i.Id == issuerAccountId);
+            var issuerKeyPair = _stellarClient.DeriveKeyPair(issuer.Mnemonic, 0);
+            var rawTx = await _stellarClient.BuildCreateLiquidityPoolRawTransaction(issuerKeyPair.AccountId, market.Base, market.Quote);
+            _ = await _stellarClient.SignSubmitRawTransaction(issuerKeyPair.PrivateKey, rawTx);
         }
 
         private async Task<OrderBookDto> GetOrderBook(AssetDto baseAsset, AssetDto quoteAsset)
@@ -185,6 +153,31 @@ namespace StellarShowcase.Repositories.Implementations
             });
 
             return orderBook;
+        }
+
+        private async Task<MarketDto> GetMarketDto(Guid marketId)
+        {
+            return await (from m in _dbContext.Market
+                          join b in _dbContext.Asset on m.BaseAssetId equals b.Id
+                          join q in _dbContext.Asset on m.QuoteAssetId equals q.Id
+                          where m.Id == marketId
+                          select new MarketDto
+                          {
+                              Id = m.Id,
+                              Name = m.Name,
+                              Base = new AssetDto
+                              {
+                                  IssuerAccountId = b.IssuerAccountId,
+                                  TotalSupply = b.TotalSupply,
+                                  UnitName = b.UnitName,
+                              },
+                              Quote = new AssetDto
+                              {
+                                  IssuerAccountId = q.IssuerAccountId,
+                                  TotalSupply = q.TotalSupply,
+                                  UnitName = q.UnitName,
+                              },
+                          }).FirstOrDefaultAsync();
         }
     }
 }

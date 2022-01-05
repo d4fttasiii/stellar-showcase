@@ -16,5 +16,7 @@ namespace StellarShowcase.Repositories.Interfaces
         Task<List<LiquidityPoolDto>> GetLiquidityPools();
 
         Task<LiquidityPoolDto> GetLiquidityPool(Guid marketId);
+
+        Task CreateLiquidityPool(Guid marketId, Guid issuerAccountId);
     }
 }
