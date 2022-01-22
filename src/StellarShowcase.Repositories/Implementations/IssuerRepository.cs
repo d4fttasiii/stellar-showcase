@@ -191,5 +191,41 @@ namespace StellarShowcase.Repositories.Implementations
 
             return await _stellarClient.SignSubmitRawTransaction(distributorKeyPair.PrivateKey, rawTx);
         }
+
+        public async Task CreateLiquidityPool(Guid id, Guid marketId)
+        {
+            var market = await GetMarketDto(marketId);
+            var mnemonic = (await _dbContext.Issuer.FirstOrDefaultAsync(i => i.Id == id)).Mnemonic;
+
+            var keyPair = _stellarClient.DeriveKeyPair(mnemonic, 0);
+            var rawTx = await _stellarClient.BuildCreateLiquidityPoolRawTransaction(keyPair.AccountId, market.Base, market.Quote);
+
+            _ = await _stellarClient.SignSubmitRawTransaction(keyPair.PrivateKey, rawTx);
+        }
+
+        private async Task<MarketDto> GetMarketDto(Guid marketId)
+        {
+            return await (from m in _dbContext.Market
+                          join b in _dbContext.Asset on m.BaseAssetId equals b.Id
+                          join q in _dbContext.Asset on m.QuoteAssetId equals q.Id
+                          where m.Id == marketId
+                          select new MarketDto
+                          {
+                              Id = m.Id,
+                              Name = m.Name,
+                              Base = new AssetDto
+                              {
+                                  IssuerAccountId = b.IssuerAccountId,
+                                  TotalSupply = b.TotalSupply,
+                                  UnitName = b.UnitName,
+                              },
+                              Quote = new AssetDto
+                              {
+                                  IssuerAccountId = q.IssuerAccountId,
+                                  TotalSupply = q.TotalSupply,
+                                  UnitName = q.UnitName,
+                              },
+                          }).FirstOrDefaultAsync();
+        }
     }
 }

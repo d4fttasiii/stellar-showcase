@@ -33,12 +33,6 @@ namespace StellarShowcase.API.Controllers
         public async Task<ActionResult<MarketDto>> GetMarket([FromRoute] Guid id)
         {
             return await HandleRequest(async () => await _exchangeRepository.GetMarket(id));
-        }
-
-        [HttpGet, Route("markets/{id}/liquidity-pool")]
-        public async Task<ActionResult<LiquidityPoolDto>> CreateLiquidityPool([FromRoute] Guid id)
-        {
-            return await HandleRequest(async () => await _exchangeRepository.GetLiquidityPool(id));
-        }
+        }   
     }
 }

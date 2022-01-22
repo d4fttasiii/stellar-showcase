@@ -59,6 +59,7 @@ namespace StellarShowcase.Repositories.Implementations
         {
             var market = await GetMarketDto(marketId);
             market.OrderBooks = await GetOrderBook(market.Base, market.Quote);
+            market.LiquidityPool = await GetLiquidityPool(market.Id);
 
             return market;
         }
@@ -128,16 +129,6 @@ namespace StellarShowcase.Repositories.Implementations
             var liquidityPool = await _stellarClient.GetLiquidityPool(market.Base, market.Quote);
 
             return liquidityPool;
-        }
-
-
-        public async Task CreateLiquidityPool(Guid marketId, Guid issuerAccountId)
-        {
-            var market = await GetMarketDto(marketId);
-            var issuer = await _dbContext.Issuer.FirstOrDefaultAsync(i => i.Id == issuerAccountId);
-            var issuerKeyPair = _stellarClient.DeriveKeyPair(issuer.Mnemonic, 0);
-            var rawTx = await _stellarClient.BuildCreateLiquidityPoolRawTransaction(issuerKeyPair.AccountId, market.Base, market.Quote);
-            _ = await _stellarClient.SignSubmitRawTransaction(issuerKeyPair.PrivateKey, rawTx);
         }
 
         private async Task<OrderBookDto> GetOrderBook(AssetDto baseAsset, AssetDto quoteAsset)

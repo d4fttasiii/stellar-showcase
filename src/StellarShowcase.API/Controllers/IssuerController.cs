@@ -110,5 +110,17 @@ namespace StellarShowcase.API.Controllers
         {
             return await HandleRequest(async () => await _issuerRepository.TransferAsset(id, assetId, tx));
         }
+
+        /// <summary>
+        /// Creates a new liquidity pool belonging to the issuer address
+        /// </summary>
+        /// <param name="id">Issuer Id</param>
+        /// <param name="marketId">Market Id</param>
+        /// <returns></returns>
+        [HttpPost, Route("{id}/market/{marketId}/liquidity-pool")]
+        public async Task<ActionResult<LiquidityPoolDto>> CreateLiquidityPool([FromRoute] Guid id, [FromRoute] Guid marketId)
+        {
+            return await HandleRequest(async () => await _issuerRepository.CreateLiquidityPool(id, marketId));
+        }
     }
 }

@@ -20,5 +20,7 @@ namespace StellarShowcase.Repositories.Interfaces
         Task RevokeTrustline(Guid id, Guid assetId, Guid userAccountId);
 
         Task<string> TransferAsset(Guid id, Guid assetId, IssuerTransferDto tx);
+
+        Task CreateLiquidityPool(Guid id, Guid marketId);
     }
 }
